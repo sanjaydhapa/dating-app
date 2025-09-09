@@ -1,0 +1,28 @@
+# Laravel ignored directories
+/vendor
+/node_modules
+/public/hot
+/public/storage
+/storage
+/bootstrap/cache
+
+# Ignore all Laravel environment and debug files
+.env
+.env.*
+.phpunit.result.cache
+
+# Ignore Laravel specific cache and compiled files
+/storage/*.key
+/storage/framework/*
+!/storage/framework/.gitignore
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# Docker and Vagrant
+docker-compose.override.yml
+Homestead.json
+Homestead.yaml
+
+# NPM/Yarn logs
+npm-debug.log
+yarn-error.log
