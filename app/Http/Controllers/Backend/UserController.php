@@ -8,6 +8,7 @@ use App\Models\UserKycInfo;
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Factory;
 use Auth;
 use Yajra\DataTables\DataTables;
@@ -70,110 +71,128 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'nick_name' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'country' => 'nullable|string|max:255',
-            'id_type' => 'nullable|string|max:255',
-            'dob' => 'nullable|date_format:d/m/Y',
-            'thambnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'thambnail_kyc' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-
-        // -----------------------
-        // 1. Handle User Insert
-        // -----------------------
-        $thumb_url = null;
-        if ($request->hasFile('thambnail')) {
-            $thumb_url = $request->file('thambnail')->store('profile_photos', 'public');
-        }
-
-        $user = User::create([
-            'name' => $request->name,
-            'nick_name' => $request->nick_name,
-            'email' => $request->email,
-            'profile_photo_path' => $thumb_url,
-            'password' => Hash::make($request->password),
-            'status' => 2,
-        ]);
-
-        // -----------------------
-        // 2. Handle KYC Info
-        // -----------------------
-        $kycData = [
-            'user_id' => $user->id,
-            'country' => $request->country,
-            'id_type' => $request->id_type,
-        ];
-
-        if ($request->hasFile('thambnail_kyc')) {
-            $kycData['id_document'] = $request->file('thambnail_kyc')->store('id_documents', 'public');
-        }
-
-        UserKycInfo::create($kycData);
-
-        // -----------------------
-        // 3. Handle Profile Info
-        // -----------------------
-        $profileData = $request->only([
-            'gender', 'about_you', 'height', 'body_type', 'eye_color', 'hair_color',
-            'sleeping_habits', 'love_language', 'childrean', 'financial_status',
-            'dress_stype', 'pets', 'zodiac_sign', 'vaccinated', 'drinking_habits',
-            'smoking_habits', 'eating_habits', 'communication_style', 'workout',
-            'education', 'relationship_status', 'religion', 'location','occupation',
-            'love_goals', 'looking_in_partner', 'age_range_in_partner_min',
-            'age_range_in_partner_max', 'partner_distance_min', 'partner_distance_max',
-            'partner_height_min', 'partner_height_max'
-        ]);
-
-        if ($request->dob) {
-            $profileData['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
-        }
-
-        foreach (['language_speak', 'sports', 'entertainment', 'my_interests', 'iam_looking_for', 'iam_seeking','partner_body_type',
-            'partner_relationship_status', 'partner_eye_color','partner_hair_color','partner_smoking_habits', 'partner_eating_habits', 'partner_children','partner_occupation', 'partner_education', 'partner_religion',
-            'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits' ,'partner_pets', 'partner_sports', 'partner_entertainment'] as $field) {
-            $profileData[$field] = is_array($request->$field)
-                ? implode(',', $request->$field)
-                : $request->$field;
-        }
-
-        // Handle gallery photo uploads
-        for ($i = 1; $i <= 6; $i++) {
-            $photoField = 'gallery_photo' . $i;
-            if ($request->hasFile($photoField)) {
-                $photoPath = $request->file($photoField)->store('profile_photos', 'public');
-                $profileData[$photoField] = $photoPath;
-            }
-        }
-
-        $profileData['user_id'] = $user->id;
-
-        UserProfile::create($profileData);
-
-        // -----------------------
-        // 4. Firebase Sync
-        // -----------------------
         try {
-            if ($thumb_url) {
-                $firebase = (new \Kreait\Firebase\Factory)
-                    ->withServiceAccount(config('firebase.credentials'))
-                    ->withDatabaseUri(config('firebase.projects.app.database.url'));
+            // Debug: Log all request data
+            Log::info('User store request data:', $request->all());
+            
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'nick_name' => 'nullable|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:6',
+                'country' => 'nullable|string|max:255',
+                'id_type' => 'nullable|string|max:255',
+                'dob' => 'nullable|date_format:d/m/Y',
+                'thambnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'thambnail_kyc' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
 
-                $firebase->createDatabase()
-                    ->getReference('users/' . $user->id . '/profile_photo_url')
-                    ->set(asset('storage/' . $thumb_url));
+            // -----------------------
+            // 1. Handle User Insert
+            // -----------------------
+            $thumb_url = null;
+            if ($request->hasFile('thambnail')) {
+                $thumb_url = $request->file('thambnail')->store('profile_photos', 'public');
             }
-        } catch (\Throwable $e) {
-            \Log::error('Failed to sync profile photo to Firebase: ' . $e->getMessage());
-        }
 
-        return redirect()->route('all.user')->with([
-            'message' => 'User added successfully!',
-            'alert-type' => 'success'
-        ]);
+            $user = User::create([
+                'name' => $request->name,
+                'nick_name' => $request->nick_name,
+                'email' => $request->email,
+                'profile_photo_path' => $thumb_url,
+                'password' => Hash::make($request->password),
+                'status' => 2,
+            ]);
+            
+            Log::info('User created successfully:', ['user_id' => $user->id]);
+
+            // -----------------------
+            // 2. Handle KYC Info
+            // -----------------------
+            $kycData = [
+                'user_id' => $user->id,
+                'country' => $request->country,
+                'id_type' => $request->id_type,
+            ];
+
+            if ($request->hasFile('thambnail_kyc')) {
+                $kycData['id_document'] = $request->file('thambnail_kyc')->store('id_documents', 'public');
+            }
+
+            UserKycInfo::create($kycData);
+            Log::info('KYC info created successfully for user:', ['user_id' => $user->id]);
+
+            // -----------------------
+            // 3. Handle Profile Info
+            // -----------------------
+            $profileData = $request->only([
+                'gender', 'about_you', 'height', 'body_type', 'eye_color', 'hair_color',
+                'sleeping_habits', 'love_language', 'childrean', 'financial_status',
+                'dress_stype', 'pets', 'zodiac_sign', 'vaccinated', 'drinking_habits',
+                'smoking_habits', 'eating_habits', 'communication_style', 'workout',
+                'education', 'relationship_status', 'religion', 'location','occupation',
+                'love_goals', 'looking_in_partner', 'age_range_in_partner_min',
+                'age_range_in_partner_max', 'partner_distance_min', 'partner_distance_max',
+                'partner_height_min', 'partner_height_max'
+            ]);
+
+            if ($request->dob) {
+                $profileData['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
+            }
+
+            foreach (['language_speak', 'sports', 'entertainment', 'my_interests', 'iam_looking_for', 'iam_seeking','partner_body_type',
+                'partner_relationship_status', 'partner_eye_color','partner_hair_color','partner_smoking_habits', 'partner_eating_habits', 'partner_children','partner_occupation', 'partner_education', 'partner_religion',
+                'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits' ,'partner_pets', 'partner_sports', 'partner_entertainment'] as $field) {
+                $profileData[$field] = is_array($request->$field)
+                    ? implode(',', $request->$field)
+                    : $request->$field;
+            }
+
+            // Handle gallery photo uploads
+            for ($i = 1; $i <= 6; $i++) {
+                $photoField = 'gallery_photo' . $i;
+                if ($request->hasFile($photoField)) {
+                    $photoPath = $request->file($photoField)->store('profile_photos', 'public');
+                    $profileData[$photoField] = $photoPath;
+                }
+            }
+
+            $profileData['user_id'] = $user->id;
+
+            UserProfile::create($profileData);
+            Log::info('User profile created successfully for user:', ['user_id' => $user->id]);
+
+            // -----------------------
+            // 4. Firebase Sync (Optional - can fail without affecting user creation)
+            // -----------------------
+            try {
+                if ($thumb_url) {
+                    $firebase = (new \Kreait\Firebase\Factory)
+                        ->withServiceAccount(config('firebase.credentials'))
+                        ->withDatabaseUri(config('firebase.projects.app.database.url'));
+
+                    $firebase->createDatabase()
+                        ->getReference('users/' . $user->id . '/profile_photo_url')
+                        ->set(asset('storage/' . $thumb_url));
+                }
+            } catch (\Throwable $e) {
+                Log::error('Failed to sync profile photo to Firebase: ' . $e->getMessage());
+            }
+
+            return redirect()->route('all.user')->with([
+                'message' => 'User added successfully!',
+                'alert-type' => 'success'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error creating user:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            return redirect()->back()->withErrors(['error' => 'Error creating user: ' . $e->getMessage()]);
+        }
     }
 
 
@@ -392,7 +411,7 @@ class UserController extends Controller
                     ->set(asset('storage/' . $path));
             }
         } catch (\Throwable $e) {
-            \Log::error('Firebase sync failed: ' . $e->getMessage());
+            Log::error('Firebase sync failed: ' . $e->getMessage());
         }
 
         return redirect()->route('all.user')->with([

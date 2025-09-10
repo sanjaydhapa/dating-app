@@ -668,6 +668,18 @@
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-group">
+                                            <h5>User's Location <span class="text-danger">*</span></h5>
+                                            <div class="controls">
+                                                <textarea name="user_location" class="form-control" disabled rows="4"
+                                                          placeholder="User's Location...">{{ old('user_location', trim($profile->location) ?? '') }}</textarea>
+                                                @error('user_location')
+                                                <span class="text-danger">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
                                             <h5>Love Goals <span class="text-danger">*</span></h5>
                                             <div class="controls">
                                                 <textarea name="love_goals" class="form-control" rows="4"
@@ -873,6 +885,11 @@
                                                 @enderror
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <hr>
+                                        <h3 class="pb-5">Desired partner</h3>
+                                        <hr>
                                     </div>
                                     @php
                                         // fallback for old input or DB values
@@ -1384,13 +1401,13 @@
                                                     <button type="button"
                                                             class="btn btn-default form-control dropdown-toggle text-center"
                                                             data-bs-toggle="dropdown" aria-expanded="false"
-                                                            id="partnerDrinkingHabitDropdownButton">
-                                                        Select Option
+                                                            id="partnerChildrenDropdownButton">
+                                                        Select Partner Children
                                                     </button>
 
                                                     <div class="dropdown-menu p-3"
                                                          style="width: 100%; max-height: 300px; overflow-y: auto;">
-                                                        @foreach (config('profile_fields.partner_children') as $partner_children)
+                                                        @foreach (config('profile_fields.childrean') as $partner_children)
                                                             <div class="form-check">
                                                                 <input type="checkbox" class="form-check-input"
                                                                        id="partner_children_{{ $loop->index }}"
@@ -1856,6 +1873,50 @@
                                                 </div>
                                                 @error('partner_entertainment')
                                                 <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @php
+                                        $selectedGoalsAndDreams = old('goals_and_dreams', $profile->goals_and_dreams ?? []);
+                                        if (is_string($selectedGoalsAndDreams)) {
+                                            $selectedGoalsAndDreams = array_map(
+                                                'trim',
+                                                explode(',', $selectedGoalsAndDreams),
+                                            );
+                                        }
+                                    @endphp
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <h5>Goals And Dreams<span class="text-danger">*</span></h5>
+                                            <div class="controls">
+                                                <div class="dropdown">
+                                                    <button type="button"
+                                                            class="btn btn-default form-control dropdown-toggle text-center"
+                                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                                            id="goalsAndDreamsDropdownButton">
+                                                        Select Goals And Dreams
+                                                    </button>
+
+                                                    <div class="dropdown-menu p-3"
+                                                         style="width: 100%; max-height: 300px; overflow-y: auto;">
+                                                        @foreach (config('profile_fields.goals_and_dreams') as $goals)
+                                                            <div class="form-check">
+                                                                <input type="checkbox" class="form-check-input"
+                                                                       id="goals_and_dreams_{{ $loop->index }}"
+                                                                       name="goals_and_dreams[]"
+                                                                       value="{{ $goals }}"
+                                                                    {{ in_array($goals, $selectedGoalsAndDreams) ? 'checked' : '' }}>
+                                                                <label class="form-check-label"
+                                                                       for="goals_and_dreams_{{ $loop->index }}">
+                                                                    {{ $goals }}
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                @error('goals_and_dreams')
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                         </div>
