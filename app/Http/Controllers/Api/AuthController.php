@@ -8,12 +8,12 @@ use App\Models\Student;
 use App\Models\User;
 use App\Models\OtpCode;
 use App\Models\Profile;
-use DB; 
-use Auth; 
+use DB;
+use Auth;
 use Session;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpEmail;
-use Validator; 
+use Validator;
 use Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -296,9 +296,9 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        
+
         $firebaseCustomToken = $this->syncWithFirebase($user);
-        
+
         return $this->success('User registered successfully', [
             'access_token' => $token,
             'firebase_custom_token' => $firebaseCustomToken,
@@ -311,9 +311,9 @@ class AuthController extends Controller
         $request->validate(['id_token' => 'required']);
 
         $client = new Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]); // OAuth 2.0 Client ID
-        
+
         $payload = $client->verifyIdToken($request->id_token);
-        
+
         if (!$payload) {
             return response()->json(['error' => 'Invalid Google token'], 401);
         }
@@ -322,7 +322,7 @@ class AuthController extends Controller
             ['email' => $payload['email']],
             [
                 'name' => $payload['name'] ?? $payload['email'],
-                'password' => bcrypt(str_random(16))
+                'password' => bcrypt(\Illuminate\Support\Str::random(16))
             ]
         );
 
@@ -348,8 +348,8 @@ class AuthController extends Controller
         if (!$user) {
             return $this->error('Email address not found. Please register or check the email.', [], 404);
         }
-        
-    
+
+
         if (!Hash::check($request->password, $user->password)) {
             return $this->error('Incorrect password. Please try again.', [], 401);
         }
@@ -413,7 +413,7 @@ class AuthController extends Controller
             // Here you can use an SMS gateway like Twilio/Fast2SMS
             // sendSms($contact, "Your OTP is: $otp");
         }
-        
+
         OtpCode::create($data);
 
         return response()->json(['message' => 'OTP sent successfully.']);
@@ -465,7 +465,7 @@ class AuthController extends Controller
             ]);
         }
     }
-   
+
 
     public function forgotPasswordApi(Request $request)
     {
@@ -552,23 +552,23 @@ class AuthController extends Controller
 
         return $this->success('Password has been reset successfully');
     }
-      
+
     public function deleteUser(Request $request)
     {
         $user = $request->user();
-    
+
         if ($user) {
             // 1. Delete from Firebase
             try {
                 $firebase = (new Factory)
                     ->withServiceAccount(config('firebase.credentials'))
                     ->withDatabaseUri(config('firebase.projects.app.database.url'));
-    
+
                 // Delete from Firebase Realtime Database
                 $firebase->createDatabase()
                     ->getReference('users/' . $user->id)
                     ->remove();
-    
+
                 // Delete from Firebase Auth
                 $auth = $firebase->createAuth();
                 try {
@@ -581,14 +581,14 @@ class AuthController extends Controller
                 // Log Firebase deletion error, but don't stop local deletion
                 Log::error("Firebase deletion failed for user ID {$user->id}: " . $e->getMessage());
             }
-    
+
             // 2. Delete local user
             $user->tokens()->delete(); // Optional: revoke Sanctum tokens
             $user->delete(); // Or use ->forceDelete() if needed
-    
+
             return $this->success('User account deleted successfully.');
         }
-    
+
         return $this->error('Unauthorized or user not found.');
     }
 
@@ -600,12 +600,12 @@ class AuthController extends Controller
             $user->tokens()->delete();
 
             $user->delete(); // Or soft delete if `SoftDeletes` is enabled
-            return $this->success('User account deleted successfully.');            
+            return $this->success('User account deleted successfully.');
         }
         return $this->error('Unauthorized or user not found.');
-        
+
     }
-    
+
     public function googleLogin11(Request $request)
     {
         $request->validate(['id_token' => 'required']);
@@ -616,7 +616,7 @@ class AuthController extends Controller
             ['email' => $googleUser->getEmail()],
             [
                 'name' => $googleUser->getName(),
-                'password' => bcrypt(str_random(16)) // random password
+                'password' => bcrypt(\Illuminate\Support\Str::random(16)) // random password
             ]
         );
 
@@ -665,7 +665,7 @@ class AuthController extends Controller
         $firebase = (new Factory)
             ->withServiceAccount(config('firebase.credentials'))
             ->withDatabaseUri(config('firebase.projects.app.database.url')); // ✅ Add this line
-    
+
         // Sync to Firebase Realtime DB
         $firebase->createDatabase()
             ->getReference('users/' . $user->id)
@@ -674,10 +674,10 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ]);
-    
+
         // Sync to Firebase Auth
         $auth = $firebase->createAuth();
-    
+
         try {
             $auth->getUserByEmail($user->email);
         } catch (UserNotFound $e) {
