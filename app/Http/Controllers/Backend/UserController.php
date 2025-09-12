@@ -74,7 +74,7 @@ class UserController extends Controller
         try {
             // Debug: Log all request data
             Log::info('User store request data:', $request->all());
-            
+
             $request->validate([
                 'name' => 'required|string|max:255',
                 'nick_name' => 'nullable|string|max:255',
@@ -103,7 +103,7 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
                 'status' => 2,
             ]);
-            
+
             Log::info('User created successfully:', ['user_id' => $user->id]);
 
             // -----------------------
@@ -183,14 +183,14 @@ class UserController extends Controller
                 'message' => 'User added successfully!',
                 'alert-type' => 'success'
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Error creating user:', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            
+
             return redirect()->back()->withErrors(['error' => 'Error creating user: ' . $e->getMessage()]);
         }
     }
@@ -206,6 +206,7 @@ class UserController extends Controller
         $selectedInterests = [];
         $selectedLookingFor = [];
         $selectedSeeking = [];
+        $selectedLanguages = [];
 
         if (!empty($profile->sports)) {
             $selectedSports = explode(',', $profile->sports);
@@ -222,9 +223,12 @@ class UserController extends Controller
         if (!empty($profile->iam_seeking)) {
             $selectedSeeking = explode(',', $profile->iam_seeking);
         }
+        if (!empty($profile->language_speak)) {
+            $selectedLanguages = explode(',', $profile->language_speak);
+        }
         // $kycDetail->country = trim($kycDetail->country);
         // dd(optional($kycDetail));
-        return view('backend.user.edit', compact('user', 'kycDetail', 'profile', 'selectedSports', 'selectedEntertainment', 'selectedInterests', 'selectedLookingFor', 'selectedSeeking'));
+        return view('backend.user.edit', compact('user', 'kycDetail', 'profile', 'selectedSports', 'selectedEntertainment', 'selectedInterests', 'selectedLookingFor', 'selectedSeeking', 'selectedLanguages'));
     }
 
     // public function update(Request $request)
@@ -365,6 +369,9 @@ class UserController extends Controller
 
         if ($request->dob) {
             $profileData['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
+        }
+        if ($request->user_location) {
+            $profileData['location'] = $request->user_location;
         }
 
         $arrayFields = [

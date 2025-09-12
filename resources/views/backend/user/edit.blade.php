@@ -563,14 +563,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @php
-                                        $selectedLanguages = old('language_speak', $profile->language_speak ?? []);
-
-                                        // If DB value is a string, convert to array
-                                        if (is_string($selectedLanguages)) {
-                                            $selectedLanguages = array_map('trim', explode(',', $selectedLanguages));
-                                        }
-                                    @endphp
 
                                     <div class="col-md-4">
                                         <div class="form-group">
@@ -670,8 +662,8 @@
                                         <div class="form-group">
                                             <h5>User's Location <span class="text-danger">*</span></h5>
                                             <div class="controls">
-                                                <textarea name="user_location" class="form-control" disabled rows="4"
-                                                          placeholder="User's Location...">{{ old('user_location', trim($profile->location) ?? '') }}</textarea>
+                                                <textarea name="user_location" class="form-control" rows="4"
+                                                          placeholder="User's Location...">{{ old('user_location', trim($profile->location ?? '') ) }}</textarea>
                                                 @error('user_location')
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
@@ -2302,5 +2294,668 @@
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 if(child_cateid!=null){
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     $('select[name="category_id"]').change();
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      });*/
+    </script>
+
+    <!-- Multiselect Dropdown JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Multiselect script loaded');
+
+            // Language Speak Multiselect
+            const languageButton = document.getElementById('languageSpeakDropdownButton');
+            const languageCheckboxes = document.querySelectorAll('input[name="language_speak[]"]');
+            console.log('Language button:', languageButton);
+            console.log('Language checkboxes found:', languageCheckboxes.length);
+
+            function updateLanguageButton() {
+                let selected = [];
+                languageCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                        console.log('Language selected:', cb.value);
+                    }
+                });
+                if (languageButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Languages';
+                    languageButton.textContent = buttonText;
+                    console.log('Language button updated to:', buttonText);
+                }
+            }
+
+            if (languageCheckboxes.length > 0) {
+                languageCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateLanguageButton);
+                });
+                // Initialize with a slight delay to ensure DOM is ready
+                setTimeout(updateLanguageButton, 100);
+            }
+
+            // Sports Multiselect
+            const sportsButton = document.getElementById('sportsDropdownButton');
+            const sportsCheckboxes = document.querySelectorAll('input[name="sports[]"]');
+            console.log('Sports button:', sportsButton);
+            console.log('Sports checkboxes found:', sportsCheckboxes.length);
+
+            function updateSportsButton() {
+                let selected = [];
+                sportsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                        console.log('Sport selected:', cb.value);
+                    }
+                });
+                if (sportsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Sports';
+                    sportsButton.textContent = buttonText;
+                    console.log('Sports button updated to:', buttonText);
+                }
+            }
+
+            if (sportsCheckboxes.length > 0) {
+                sportsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateSportsButton);
+                });
+                setTimeout(updateSportsButton, 100);
+            }
+
+            // Entertainment Multiselect
+            const entertainmentButton = document.getElementById('entertainmentDropdownButton');
+            const entertainmentCheckboxes = document.querySelectorAll('input[name="entertainment[]"]');
+            console.log('Entertainment button:', entertainmentButton);
+            console.log('Entertainment checkboxes found:', entertainmentCheckboxes.length);
+
+            function updateEntertainmentButton() {
+                let selected = [];
+                entertainmentCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                        console.log('Entertainment selected:', cb.value);
+                    }
+                });
+                if (entertainmentButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Entertainment';
+                    entertainmentButton.textContent = buttonText;
+                    console.log('Entertainment button updated to:', buttonText);
+                }
+            }
+
+            if (entertainmentCheckboxes.length > 0) {
+                entertainmentCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateEntertainmentButton);
+                });
+                setTimeout(updateEntertainmentButton, 100);
+            }
+
+            // Interests Multiselect
+            const interestsButton = document.getElementById('interestsDropdownButton');
+            const interestsCheckboxes = document.querySelectorAll('input[name="my_interests[]"]');
+            console.log('Interests button:', interestsButton);
+            console.log('Interests checkboxes found:', interestsCheckboxes.length);
+
+            function updateInterestsButton() {
+                let selected = [];
+                interestsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                        console.log('Interest selected:', cb.value);
+                    }
+                });
+                if (interestsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Interests';
+                    interestsButton.textContent = buttonText;
+                    console.log('Interests button updated to:', buttonText);
+                }
+            }
+
+            if (interestsCheckboxes.length > 0) {
+                interestsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateInterestsButton);
+                });
+                setTimeout(updateInterestsButton, 100);
+            }
+
+            // Looking For Multiselect
+            const lookingForButton = document.getElementById('lookingForDropdownButton');
+            const lookingForCheckboxes = document.querySelectorAll('input[name="iam_looking_for[]"]');
+            console.log('LookingFor button:', lookingForButton);
+            console.log('LookingFor checkboxes found:', lookingForCheckboxes.length);
+
+            function updateLookingForButton() {
+                let selected = [];
+                lookingForCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                        console.log('LookingFor selected:', cb.value);
+                    }
+                });
+                if (lookingForButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Looking For';
+                    lookingForButton.textContent = buttonText;
+                    console.log('LookingFor button updated to:', buttonText);
+                }
+            }
+
+            if (lookingForCheckboxes.length > 0) {
+                lookingForCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateLookingForButton);
+                });
+                setTimeout(updateLookingForButton, 100);
+            }
+
+            // Seeking Multiselect
+            const seekingButton = document.getElementById('iamSeekingDropdownButton');
+            const seekingCheckboxes = document.querySelectorAll('input[name="iam_seeking[]"]');
+            console.log('Seeking button:', seekingButton);
+            console.log('Seeking checkboxes found:', seekingCheckboxes.length);
+
+            function updateSeekingButton() {
+                let selected = [];
+                seekingCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                        console.log('Seeking selected:', cb.value);
+                    }
+                });
+                if (seekingButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Seeking';
+                    seekingButton.textContent = buttonText;
+                    console.log('Seeking button updated to:', buttonText);
+                }
+            }
+
+            if (seekingCheckboxes.length > 0) {
+                seekingCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateSeekingButton);
+                });
+                setTimeout(updateSeekingButton, 100);
+            }
+
+            // Prevent dropdown from closing when clicking inside
+            document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Partner Body Type Multiselect
+            const partnerBodyTypeButton = document.getElementById('partnerBodyTypeDropdownButton');
+            const partnerBodyTypeCheckboxes = document.querySelectorAll('input[name="partner_body_type[]"]');
+
+            function updatePartnerBodyTypeButton() {
+                let selected = [];
+                partnerBodyTypeCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerBodyTypeButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Body Type';
+                    partnerBodyTypeButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerBodyTypeCheckboxes.length > 0) {
+                partnerBodyTypeCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerBodyTypeButton);
+                });
+                setTimeout(updatePartnerBodyTypeButton, 100);
+            }
+
+            // Relationship Status Multiselect
+            const relationshipStatusButton = document.getElementById('relationshipStatusDropdownButton');
+            const relationshipStatusCheckboxes = document.querySelectorAll('input[name="partner_relationship_status[]"]');
+
+            function updateRelationshipStatusButton() {
+                let selected = [];
+                relationshipStatusCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (relationshipStatusButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Relationship Status';
+                    relationshipStatusButton.textContent = buttonText;
+                }
+            }
+
+            if (relationshipStatusCheckboxes.length > 0) {
+                relationshipStatusCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateRelationshipStatusButton);
+                });
+                setTimeout(updateRelationshipStatusButton, 100);
+            }
+
+            // Partner Eye Color Multiselect
+            const partnerEyeColorButton = document.getElementById('partnerEyeColorDropdownButton');
+            const partnerEyeColorCheckboxes = document.querySelectorAll('input[name="partner_eye_color[]"]');
+
+            function updatePartnerEyeColorButton() {
+                let selected = [];
+                partnerEyeColorCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEyeColorButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Eye Color';
+                    partnerEyeColorButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEyeColorCheckboxes.length > 0) {
+                partnerEyeColorCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEyeColorButton);
+                });
+                setTimeout(updatePartnerEyeColorButton, 100);
+            }
+
+            // Partner Hair Color Multiselect
+            const partnerHairColorButton = document.getElementById('partnerHairColorDropdownButton');
+            const partnerHairColorCheckboxes = document.querySelectorAll('input[name="partner_hair_color[]"]');
+
+            function updatePartnerHairColorButton() {
+                let selected = [];
+                partnerHairColorCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerHairColorButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Hair Color';
+                    partnerHairColorButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerHairColorCheckboxes.length > 0) {
+                partnerHairColorCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerHairColorButton);
+                });
+                setTimeout(updatePartnerHairColorButton, 100);
+            }
+
+            // Partner Smoking Habits Multiselect
+            const partnerSmokingHabitButton = document.getElementById('partnerSmokingHabitDropdownButton');
+            const partnerSmokingHabitCheckboxes = document.querySelectorAll('input[name="partner_smoking_habits[]"]');
+
+            function updatePartnerSmokingHabitButton() {
+                let selected = [];
+                partnerSmokingHabitCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerSmokingHabitButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Smoking Habit';
+                    partnerSmokingHabitButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerSmokingHabitCheckboxes.length > 0) {
+                partnerSmokingHabitCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerSmokingHabitButton);
+                });
+                setTimeout(updatePartnerSmokingHabitButton, 100);
+            }
+
+            // Partner Eating Habits Multiselect
+            const partnerEatingHabitButton = document.getElementById('partnerEatingHabitDropdownButton');
+            const partnerEatingHabitCheckboxes = document.querySelectorAll('input[name="partner_eating_habits[]"]');
+
+            function updatePartnerEatingHabitButton() {
+                let selected = [];
+                partnerEatingHabitCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEatingHabitButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Eating Habit';
+                    partnerEatingHabitButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEatingHabitCheckboxes.length > 0) {
+                partnerEatingHabitCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEatingHabitButton);
+                });
+                setTimeout(updatePartnerEatingHabitButton, 100);
+            }
+
+            // Partner Drinking Habits Multiselect
+            const partnerDrinkingHabitButton = document.getElementById('partnerDrinkingHabitDropdownButton');
+            const partnerDrinkingHabitCheckboxes = document.querySelectorAll('input[name="partner_drinking_habits[]"]');
+
+            function updatePartnerDrinkingHabitButton() {
+                let selected = [];
+                partnerDrinkingHabitCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerDrinkingHabitButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Drinking Habit';
+                    partnerDrinkingHabitButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerDrinkingHabitCheckboxes.length > 0) {
+                partnerDrinkingHabitCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerDrinkingHabitButton);
+                });
+                setTimeout(updatePartnerDrinkingHabitButton, 100);
+            }
+
+            // Partner Children Multiselect
+            const partnerChildrenButton = document.getElementById('partnerChildrenDropdownButton');
+            const partnerChildrenCheckboxes = document.querySelectorAll('input[name="partner_children[]"]');
+
+            function updatePartnerChildrenButton() {
+                let selected = [];
+                partnerChildrenCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerChildrenButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Children';
+                    partnerChildrenButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerChildrenCheckboxes.length > 0) {
+                partnerChildrenCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerChildrenButton);
+                });
+                setTimeout(updatePartnerChildrenButton, 100);
+            }
+
+            // Partner Occupation Multiselect
+            const partnerOccupationButton = document.getElementById('partnerOccupationDropdownButton');
+            const partnerOccupationCheckboxes = document.querySelectorAll('input[name="partner_occupation[]"]');
+
+            function updatePartnerOccupationButton() {
+                let selected = [];
+                partnerOccupationCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerOccupationButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Occupation';
+                    partnerOccupationButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerOccupationCheckboxes.length > 0) {
+                partnerOccupationCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerOccupationButton);
+                });
+                setTimeout(updatePartnerOccupationButton, 100);
+            }
+
+            // Partner Education Multiselect
+            const partnerEducationButton = document.getElementById('partnerPartnerEducationDropdownButton');
+            const partnerEducationCheckboxes = document.querySelectorAll('input[name="partner_education[]"]');
+
+            function updatePartnerEducationButton() {
+                let selected = [];
+                partnerEducationCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEducationButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Education';
+                    partnerEducationButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEducationCheckboxes.length > 0) {
+                partnerEducationCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEducationButton);
+                });
+                setTimeout(updatePartnerEducationButton, 100);
+            }
+
+            // Partner Religion Multiselect
+            const partnerReligionButton = document.getElementById('partnerPartnerReligionDropdownButton');
+            const partnerReligionCheckboxes = document.querySelectorAll('input[name="partner_religion[]"]');
+
+            function updatePartnerReligionButton() {
+                let selected = [];
+                partnerReligionCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerReligionButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Religion';
+                    partnerReligionButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerReligionCheckboxes.length > 0) {
+                partnerReligionCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerReligionButton);
+                });
+                setTimeout(updatePartnerReligionButton, 100);
+            }
+
+            // Partner Financial Status Multiselect
+            const partnerFinancialStatusButton = document.getElementById('partnerPartnerFinancialStatusDropdownButton');
+            const partnerFinancialStatusCheckboxes = document.querySelectorAll('input[name="partner_financial_status[]"]');
+
+            function updatePartnerFinancialStatusButton() {
+                let selected = [];
+                partnerFinancialStatusCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerFinancialStatusButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Financial Status';
+                    partnerFinancialStatusButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerFinancialStatusCheckboxes.length > 0) {
+                partnerFinancialStatusCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerFinancialStatusButton);
+                });
+                setTimeout(updatePartnerFinancialStatusButton, 100);
+            }
+
+            // Partner Dress Style Multiselect
+            const partnerDressStyleButton = document.getElementById('partnerPartnerDressStyleDropdownButton');
+            const partnerDressStyleCheckboxes = document.querySelectorAll('input[name="partner_dress_style[]"]');
+
+            function updatePartnerDressStyleButton() {
+                let selected = [];
+                partnerDressStyleCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerDressStyleButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Dress Style';
+                    partnerDressStyleButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerDressStyleCheckboxes.length > 0) {
+                partnerDressStyleCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerDressStyleButton);
+                });
+                setTimeout(updatePartnerDressStyleButton, 100);
+            }
+
+            // Partner Vaccination Status Multiselect
+            const partnerVaccinationStatusButton = document.getElementById('partnerVaccinationStatusDropdownButton');
+            const partnerVaccinationStatusCheckboxes = document.querySelectorAll('input[name="partner_vaccinated[]"]');
+
+            function updatePartnerVaccinationStatusButton() {
+                let selected = [];
+                partnerVaccinationStatusCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerVaccinationStatusButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Vaccination Status';
+                    partnerVaccinationStatusButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerVaccinationStatusCheckboxes.length > 0) {
+                partnerVaccinationStatusCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerVaccinationStatusButton);
+                });
+                setTimeout(updatePartnerVaccinationStatusButton, 100);
+            }
+
+            // Partner Pets Multiselect
+            const partnerPetsButton = document.getElementById('partnerPetsDropdownButton');
+            const partnerPetsCheckboxes = document.querySelectorAll('input[name="partner_pets[]"]');
+
+            function updatePartnerPetsButton() {
+                let selected = [];
+                partnerPetsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerPetsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Pets';
+                    partnerPetsButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerPetsCheckboxes.length > 0) {
+                partnerPetsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerPetsButton);
+                });
+                setTimeout(updatePartnerPetsButton, 100);
+            }
+
+            // Partner Sports Multiselect
+            const partnerSportsButton = document.getElementById('partnerSportsDropdownButton');
+            const partnerSportsCheckboxes = document.querySelectorAll('input[name="partner_sports[]"]');
+
+            function updatePartnerSportsButton() {
+                let selected = [];
+                partnerSportsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerSportsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Sports';
+                    partnerSportsButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerSportsCheckboxes.length > 0) {
+                partnerSportsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerSportsButton);
+                });
+                setTimeout(updatePartnerSportsButton, 100);
+            }
+
+            // Partner Entertainment Multiselect
+            const partnerEntertainmentButton = document.getElementById('partnerEntertainmentDropdownButton');
+            const partnerEntertainmentCheckboxes = document.querySelectorAll('input[name="partner_entertainment[]"]');
+
+            function updatePartnerEntertainmentButton() {
+                let selected = [];
+                partnerEntertainmentCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEntertainmentButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Entertainment';
+                    partnerEntertainmentButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEntertainmentCheckboxes.length > 0) {
+                partnerEntertainmentCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEntertainmentButton);
+                });
+                setTimeout(updatePartnerEntertainmentButton, 100);
+            }
+
+            // Goals and Dreams Multiselect
+            const goalsAndDreamsButton = document.getElementById('goalsAndDreamsDropdownButton');
+            const goalsAndDreamsCheckboxes = document.querySelectorAll('input[name="goals_and_dreams[]"]');
+
+            function updateGoalsAndDreamsButton() {
+                let selected = [];
+                goalsAndDreamsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (goalsAndDreamsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Goals And Dreams';
+                    goalsAndDreamsButton.textContent = buttonText;
+                }
+            }
+
+            if (goalsAndDreamsCheckboxes.length > 0) {
+                goalsAndDreamsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateGoalsAndDreamsButton);
+                });
+                setTimeout(updateGoalsAndDreamsButton, 100);
+            }
+        });
     </script>
 @endsection

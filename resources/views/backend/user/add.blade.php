@@ -566,9 +566,10 @@
                                                          style="width: 100%; max-height: 300px; overflow-y: auto;">
                                                         @foreach (config('profile_fields.language_speak') as $language)
                                                             <div class="form-check">
-                                                                <input type="checkbox" class="form-check-input"
+                                                                <input type="checkbox" class="form-check-input language-speak-checkbox"
                                                                        id="language_speak_{{ $loop->index }}"
-                                                                       name="language_speak[]">
+                                                                       name="language_speak[]"
+                                                                       value="{{ $language }}">
                                                                 <label class="form-check-label"
                                                                        for="language_speak_{{ $loop->index }}">
                                                                     {{ $language }}
@@ -955,6 +956,7 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     @php
                                         $selectedBodyType = old('partner_body_type', $profile->partner_body_type ?? []);
                                         if (is_string($selectedBodyType)) {
@@ -2175,6 +2177,98 @@
         }
     </script>
 
+    <!-- Multiselect Dropdown JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Language Speak Multiselect
+            const languageButton = document.getElementById('languageSpeakDropdownButton');
+            const languageCheckboxes = document.querySelectorAll('.language-speak-checkbox');
+
+            function updateLanguageButton() {
+                let selected = [];
+                languageCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                languageButton.textContent = selected.length > 0 ?
+                    (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                    'Select Languages';
+            }
+
+            languageCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateLanguageButton);
+            });
+
+            // Sports Multiselect
+            const sportsButton = document.getElementById('sportsDropdownButton');
+            const sportsCheckboxes = document.querySelectorAll('input[name="sports[]"]');
+
+            function updateSportsButton() {
+                let selected = [];
+                sportsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                sportsButton.textContent = selected.length > 0 ?
+                    (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                    'Select Sports';
+            }
+
+            sportsCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateSportsButton);
+            });
+
+            // Entertainment Multiselect
+            const entertainmentButton = document.getElementById('entertainmentDropdownButton');
+            const entertainmentCheckboxes = document.querySelectorAll('input[name="entertainment[]"]');
+
+            function updateEntertainmentButton() {
+                let selected = [];
+                entertainmentCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                entertainmentButton.textContent = selected.length > 0 ?
+                    (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                    'Select Entertainment';
+            }
+
+            entertainmentCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateEntertainmentButton);
+            });
+
+            // Interests Multiselect
+            const interestsButton = document.getElementById('interestsDropdownButton');
+            const interestsCheckboxes = document.querySelectorAll('input[name="my_interests[]"]');
+
+            function updateInterestsButton() {
+                let selected = [];
+                interestsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                interestsButton.textContent = selected.length > 0 ?
+                    (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                    'Select Interests';
+            }
+
+            interestsCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateInterestsButton);
+            });
+
+            // Prevent dropdown from closing when clicking inside
+            document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+        });
+    </script>
+
 <script>
         async function reverseGeocodeToZipCityCountry(lat, lon) {
             const url = new URL("https://nominatim.openstreetmap.org/reverse");
@@ -2268,4 +2362,476 @@
         document.addEventListener("DOMContentLoaded", getUserLocation);
     </script>
 
+    <!-- Partner Preference Multiselect JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Partner Body Type Multiselect
+            const partnerBodyTypeButton = document.getElementById('partnerBodyTypeDropdownButton');
+            const partnerBodyTypeCheckboxes = document.querySelectorAll('input[name="partner_body_type[]"]');
+
+            function updatePartnerBodyTypeButton() {
+                let selected = [];
+                partnerBodyTypeCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerBodyTypeButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Body Type';
+                    partnerBodyTypeButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerBodyTypeCheckboxes.length > 0) {
+                partnerBodyTypeCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerBodyTypeButton);
+                });
+                updatePartnerBodyTypeButton();
+            }
+
+            // Relationship Status Multiselect
+            const relationshipStatusButton = document.getElementById('relationshipStatusDropdownButton');
+            const relationshipStatusCheckboxes = document.querySelectorAll('input[name="partner_relationship_status[]"]');
+
+            function updateRelationshipStatusButton() {
+                let selected = [];
+                relationshipStatusCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (relationshipStatusButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Relationship Status';
+                    relationshipStatusButton.textContent = buttonText;
+                }
+            }
+
+            if (relationshipStatusCheckboxes.length > 0) {
+                relationshipStatusCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateRelationshipStatusButton);
+                });
+                updateRelationshipStatusButton();
+            }
+
+            // Partner Eye Color Multiselect
+            const partnerEyeColorButton = document.getElementById('partnerEyeColorDropdownButton');
+            const partnerEyeColorCheckboxes = document.querySelectorAll('input[name="partner_eye_color[]"]');
+
+            function updatePartnerEyeColorButton() {
+                let selected = [];
+                partnerEyeColorCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEyeColorButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Eye Color';
+                    partnerEyeColorButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEyeColorCheckboxes.length > 0) {
+                partnerEyeColorCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEyeColorButton);
+                });
+                updatePartnerEyeColorButton();
+            }
+
+            // Partner Hair Color Multiselect
+            const partnerHairColorButton = document.getElementById('partnerHairColorDropdownButton');
+            const partnerHairColorCheckboxes = document.querySelectorAll('input[name="partner_hair_color[]"]');
+
+            function updatePartnerHairColorButton() {
+                let selected = [];
+                partnerHairColorCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerHairColorButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Hair Color';
+                    partnerHairColorButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerHairColorCheckboxes.length > 0) {
+                partnerHairColorCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerHairColorButton);
+                });
+                updatePartnerHairColorButton();
+            }
+
+            // Partner Smoking Habits Multiselect
+            const partnerSmokingHabitButton = document.getElementById('partnerSmokingHabitDropdownButton');
+            const partnerSmokingHabitCheckboxes = document.querySelectorAll('input[name="partner_smoking_habits[]"]');
+
+            function updatePartnerSmokingHabitButton() {
+                let selected = [];
+                partnerSmokingHabitCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerSmokingHabitButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Smoking Habit';
+                    partnerSmokingHabitButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerSmokingHabitCheckboxes.length > 0) {
+                partnerSmokingHabitCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerSmokingHabitButton);
+                });
+                updatePartnerSmokingHabitButton();
+            }
+
+            // Partner Eating Habits Multiselect
+            const partnerEatingHabitButton = document.getElementById('partnerEatingHabitDropdownButton');
+            const partnerEatingHabitCheckboxes = document.querySelectorAll('input[name="partner_eating_habits[]"]');
+
+            function updatePartnerEatingHabitButton() {
+                let selected = [];
+                partnerEatingHabitCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEatingHabitButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Eating Habit';
+                    partnerEatingHabitButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEatingHabitCheckboxes.length > 0) {
+                partnerEatingHabitCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEatingHabitButton);
+                });
+                updatePartnerEatingHabitButton();
+            }
+
+            // Partner Drinking Habits Multiselect
+            const partnerDrinkingHabitButton = document.getElementById('partnerDrinkingHabitDropdownButton');
+            const partnerDrinkingHabitCheckboxes = document.querySelectorAll('input[name="partner_drinking_habits[]"]');
+
+            function updatePartnerDrinkingHabitButton() {
+                let selected = [];
+                partnerDrinkingHabitCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerDrinkingHabitButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Drinking Habit';
+                    partnerDrinkingHabitButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerDrinkingHabitCheckboxes.length > 0) {
+                partnerDrinkingHabitCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerDrinkingHabitButton);
+                });
+                updatePartnerDrinkingHabitButton();
+            }
+
+            // Partner Children Multiselect
+            const partnerChildrenButton = document.getElementById('partnerChildrenDropdownButton');
+            const partnerChildrenCheckboxes = document.querySelectorAll('input[name="partner_children[]"]');
+
+            function updatePartnerChildrenButton() {
+                let selected = [];
+                partnerChildrenCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerChildrenButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Children';
+                    partnerChildrenButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerChildrenCheckboxes.length > 0) {
+                partnerChildrenCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerChildrenButton);
+                });
+                updatePartnerChildrenButton();
+            }
+
+            // Partner Occupation Multiselect
+            const partnerOccupationButton = document.getElementById('partnerOccupationDropdownButton');
+            const partnerOccupationCheckboxes = document.querySelectorAll('input[name="partner_occupation[]"]');
+
+            function updatePartnerOccupationButton() {
+                let selected = [];
+                partnerOccupationCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerOccupationButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Occupation';
+                    partnerOccupationButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerOccupationCheckboxes.length > 0) {
+                partnerOccupationCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerOccupationButton);
+                });
+                updatePartnerOccupationButton();
+            }
+
+            // Partner Education Multiselect
+            const partnerEducationButton = document.getElementById('partnerPartnerEducationDropdownButton');
+            const partnerEducationCheckboxes = document.querySelectorAll('input[name="partner_education[]"]');
+
+            function updatePartnerEducationButton() {
+                let selected = [];
+                partnerEducationCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEducationButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Education';
+                    partnerEducationButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEducationCheckboxes.length > 0) {
+                partnerEducationCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEducationButton);
+                });
+                updatePartnerEducationButton();
+            }
+
+            // Partner Religion Multiselect
+            const partnerReligionButton = document.getElementById('partnerPartnerReligionDropdownButton');
+            const partnerReligionCheckboxes = document.querySelectorAll('input[name="partner_religion[]"]');
+
+            function updatePartnerReligionButton() {
+                let selected = [];
+                partnerReligionCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerReligionButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Religion';
+                    partnerReligionButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerReligionCheckboxes.length > 0) {
+                partnerReligionCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerReligionButton);
+                });
+                updatePartnerReligionButton();
+            }
+
+            // Partner Financial Status Multiselect
+            const partnerFinancialStatusButton = document.getElementById('partnerPartnerFinancialStatusDropdownButton');
+            const partnerFinancialStatusCheckboxes = document.querySelectorAll('input[name="partner_financial_status[]"]');
+
+            function updatePartnerFinancialStatusButton() {
+                let selected = [];
+                partnerFinancialStatusCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerFinancialStatusButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Financial Status';
+                    partnerFinancialStatusButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerFinancialStatusCheckboxes.length > 0) {
+                partnerFinancialStatusCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerFinancialStatusButton);
+                });
+                updatePartnerFinancialStatusButton();
+            }
+
+            // Partner Dress Style Multiselect
+            const partnerDressStyleButton = document.getElementById('partnerPartnerDressStyleDropdownButton');
+            const partnerDressStyleCheckboxes = document.querySelectorAll('input[name="partner_dress_style[]"]');
+
+            function updatePartnerDressStyleButton() {
+                let selected = [];
+                partnerDressStyleCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerDressStyleButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Dress Style';
+                    partnerDressStyleButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerDressStyleCheckboxes.length > 0) {
+                partnerDressStyleCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerDressStyleButton);
+                });
+                updatePartnerDressStyleButton();
+            }
+
+            // Partner Vaccination Status Multiselect
+            const partnerVaccinationStatusButton = document.getElementById('partnerVaccinationStatusDropdownButton');
+            const partnerVaccinationStatusCheckboxes = document.querySelectorAll('input[name="partner_vaccinated[]"]');
+
+            function updatePartnerVaccinationStatusButton() {
+                let selected = [];
+                partnerVaccinationStatusCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerVaccinationStatusButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Vaccination Status';
+                    partnerVaccinationStatusButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerVaccinationStatusCheckboxes.length > 0) {
+                partnerVaccinationStatusCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerVaccinationStatusButton);
+                });
+                updatePartnerVaccinationStatusButton();
+            }
+
+            // Partner Pets Multiselect
+            const partnerPetsButton = document.getElementById('partnerPetsDropdownButton');
+            const partnerPetsCheckboxes = document.querySelectorAll('input[name="partner_pets[]"]');
+
+            function updatePartnerPetsButton() {
+                let selected = [];
+                partnerPetsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerPetsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Pets';
+                    partnerPetsButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerPetsCheckboxes.length > 0) {
+                partnerPetsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerPetsButton);
+                });
+                updatePartnerPetsButton();
+            }
+
+            // Partner Sports Multiselect
+            const partnerSportsButton = document.getElementById('partnerSportsDropdownButton');
+            const partnerSportsCheckboxes = document.querySelectorAll('input[name="partner_sports[]"]');
+
+            function updatePartnerSportsButton() {
+                let selected = [];
+                partnerSportsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerSportsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Sports';
+                    partnerSportsButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerSportsCheckboxes.length > 0) {
+                partnerSportsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerSportsButton);
+                });
+                updatePartnerSportsButton();
+            }
+
+            // Partner Entertainment Multiselect
+            const partnerEntertainmentButton = document.getElementById('partnerEntertainmentDropdownButton');
+            const partnerEntertainmentCheckboxes = document.querySelectorAll('input[name="partner_entertainment[]"]');
+
+            function updatePartnerEntertainmentButton() {
+                let selected = [];
+                partnerEntertainmentCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerEntertainmentButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Entertainment';
+                    partnerEntertainmentButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerEntertainmentCheckboxes.length > 0) {
+                partnerEntertainmentCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerEntertainmentButton);
+                });
+                updatePartnerEntertainmentButton();
+            }
+
+            // Goals and Dreams Multiselect
+            const goalsAndDreamsButton = document.getElementById('goalsAndDreamsDropdownButton');
+            const goalsAndDreamsCheckboxes = document.querySelectorAll('input[name="goals_and_dreams[]"]');
+
+            function updateGoalsAndDreamsButton() {
+                let selected = [];
+                goalsAndDreamsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (goalsAndDreamsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Goals And Dreams';
+                    goalsAndDreamsButton.textContent = buttonText;
+                }
+            }
+
+            if (goalsAndDreamsCheckboxes.length > 0) {
+                goalsAndDreamsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateGoalsAndDreamsButton);
+                });
+                updateGoalsAndDreamsButton();
+            }
+        });
+    </script>
 @endsection
