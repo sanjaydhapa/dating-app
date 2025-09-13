@@ -329,8 +329,8 @@ class AuthController extends Controller
         Auth::login($user);
 
         $firebaseCustomToken = $this->syncWithFirebase($user);
-
-        return response()->json(['user' => $user, 'firebase_custom_token' => $firebaseCustomToken], 200);
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return response()->json(['user' => $user, 'firebase_custom_token' => $firebaseCustomToken,  'access_token' => $token,'token_type' => 'Bearer'], 200);
     }
 
     // Login
