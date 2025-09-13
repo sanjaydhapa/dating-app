@@ -655,6 +655,24 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <h5>Country <span class="text-danger">*</span></h5>
+                                            <div class="controls">
+                                                <select name="profile_country" class="form-control">
+                                                    <option value="">Select Country</option>
+                                                    @foreach (config('profile_fields.country') as $country)
+                                                        <option value="{{ $country }}">
+                                                            {{ $country }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('country')
+                                                <span class="text-danger">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div class="col-md-12">
                                         <div class="form-group">

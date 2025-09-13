@@ -322,9 +322,16 @@ class AuthController extends Controller
             ['email' => $payload['email']],
             [
                 'name' => $payload['name'] ?? $payload['email'],
-                'password' => bcrypt(\Illuminate\Support\Str::random(16))
+                'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                'status' => 2,
+                'nick_name' => $payload['given_name'] ?? null,
             ]
         );
+
+        // Check if user is inactive
+        if ($user->status == 0) {
+            return $this->error('Your account is inactive. Please contact support.', [], 403);
+        }
 
         Auth::login($user);
 

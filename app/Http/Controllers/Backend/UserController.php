@@ -138,12 +138,16 @@ class UserController extends Controller
                 'education', 'relationship_status', 'religion', 'location','occupation',
                 'love_goals', 'looking_in_partner', 'age_range_in_partner_min',
                 'age_range_in_partner_max', 'partner_distance_min', 'partner_distance_max',
-                'partner_height_min', 'partner_height_max',
+                'partner_height_min', 'partner_height_max','profile_country',
 
             ]);
 
             // Explicitly assign user_location
             $profileData['user_location'] = $request->input('user_location');
+
+            if ($request->profile_country) {
+                $profileData['country'] = $request->profile_country;
+            }
 
             if ($request->dob) {
                 $profileData['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
@@ -387,6 +391,10 @@ class UserController extends Controller
 
         if ($request->user_location) {
             $profileData['user_location'] = $request->user_location;
+        }
+
+        if ($request->profile_country) {
+            $profileData['country'] = $request->profile_country;
         }
 
         $arrayFields = [
