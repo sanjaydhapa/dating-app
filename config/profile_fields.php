@@ -539,11 +539,12 @@ return [
     ],
     'iam_looking_for' => [
         'Friendship',
-        'Dating',
+        'Date',
         'Marriage',
         'Adventure',
         'Intimate encounter',
         'Short term',
+        'Long Term',
         'Anything',
         "I don't know yet ...",
     ],

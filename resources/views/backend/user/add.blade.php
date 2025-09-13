@@ -374,16 +374,30 @@
                                         <div class="form-group">
                                             <h5>Pets <span class="text-danger">*</span></h5>
                                             <div class="controls">
-                                                <select name="pets" class="form-control">
-                                                    <option value="">Select Pet</option>
-                                                    @foreach (config('profile_fields.pets') as $pets)
-                                                        <option value="{{ $pets }}">
-                                                            {{ $pets }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                                <div class="dropdown">
+                                                    <button type="button"
+                                                            class="btn btn-default form-control dropdown-toggle"
+                                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                                            id="petsDropdownButton">
+                                                        Select Pets
+                                                    </button>
+                                                    <div class="dropdown-menu p-3"
+                                                         style="width: 100%; max-height: 300px; overflow-y: auto;">
+                                                        @foreach (config('profile_fields.pets') as $pet)
+                                                            <div class="form-check">
+                                                                <input type="checkbox" class="form-check-input"
+                                                                       id="pet_{{ $loop->index }}"
+                                                                       name="pets[]" value="{{ $pet }}">
+                                                                <label class="form-check-label"
+                                                                       for="pet_{{ $loop->index }}">
+                                                                    {{ $pet }}
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
                                                 @error('pets')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger d-block mt-1">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                         </div>
@@ -2496,6 +2510,32 @@
                     cb.addEventListener('change', updateSeekingButton);
                 });
                 updateSeekingButton();
+            }
+
+            // Pets Multiselect
+            const petsButton = document.getElementById('petsDropdownButton');
+            const petsCheckboxes = document.querySelectorAll('input[name="pets[]"]');
+
+            function updatePetsButton() {
+                let selected = [];
+                petsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (petsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Pets';
+                    petsButton.textContent = buttonText;
+                }
+            }
+
+            if (petsCheckboxes.length > 0) {
+                petsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePetsButton);
+                });
+                updatePetsButton();
             }
 
             // Prevent dropdown from closing when clicking inside

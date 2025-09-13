@@ -140,7 +140,7 @@ class UserController extends Controller
                 $profileData['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
             }
 
-            foreach (['language_speak', 'sports', 'entertainment', 'my_interests', 'iam_looking_for', 'iam_seeking','partner_body_type',
+            foreach (['language_speak', 'sports', 'entertainment', 'my_interests', 'iam_looking_for', 'iam_seeking', 'pets', 'partner_body_type',
                 'partner_relationship_status', 'partner_eye_color','partner_hair_color','partner_smoking_habits', 'partner_eating_habits', 'partner_children','partner_occupation', 'partner_education', 'partner_religion',
                 'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits' ,'partner_pets', 'partner_sports', 'partner_entertainment'] as $field) {
                 $profileData[$field] = is_array($request->$field)
@@ -207,6 +207,7 @@ class UserController extends Controller
         $selectedLookingFor = [];
         $selectedSeeking = [];
         $selectedLanguages = [];
+        $selectedPets = [];
 
         if (!empty($profile->sports)) {
             $selectedSports = explode(',', $profile->sports);
@@ -226,9 +227,12 @@ class UserController extends Controller
         if (!empty($profile->language_speak)) {
             $selectedLanguages = explode(',', $profile->language_speak);
         }
+        if (!empty($profile->pets)) {
+            $selectedPets = explode(',', $profile->pets);
+        }
         // $kycDetail->country = trim($kycDetail->country);
         // dd(optional($kycDetail));
-        return view('backend.user.edit', compact('user', 'kycDetail', 'profile', 'selectedSports', 'selectedEntertainment', 'selectedInterests', 'selectedLookingFor', 'selectedSeeking', 'selectedLanguages'));
+        return view('backend.user.edit', compact('user', 'kycDetail', 'profile', 'selectedSports', 'selectedEntertainment', 'selectedInterests', 'selectedLookingFor', 'selectedSeeking', 'selectedLanguages', 'selectedPets'));
     }
 
     // public function update(Request $request)
@@ -376,7 +380,7 @@ class UserController extends Controller
 
         $arrayFields = [
             'language_speak', 'sports', 'entertainment', 'my_interests', 'iam_looking_for',
-            'iam_seeking','partner_body_type',
+            'iam_seeking', 'pets', 'partner_body_type',
             'partner_relationship_status', 'partner_eye_color', 'partner_hair_color',
             'partner_smoking_habits', 'partner_eating_habits', 'partner_children',
             'partner_occupation', 'partner_education', 'partner_religion',
