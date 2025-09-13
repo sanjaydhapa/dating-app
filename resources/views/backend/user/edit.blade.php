@@ -678,7 +678,7 @@
                                             <h5>User's Location <span class="text-danger">*</span></h5>
                                             <div class="controls">
                                                 <textarea name="user_location" class="form-control" rows="4"
-                                                          placeholder="User's Location...">{{ old('user_location', trim($profile->location ?? '') ) }}</textarea>
+                                                          placeholder="User's Location...">{{ old('user_location', trim($profile->user_location ?? '') ) }}</textarea>
                                                 @error('user_location')
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror

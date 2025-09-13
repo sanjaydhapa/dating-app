@@ -23,7 +23,7 @@ class UserController extends Controller
     public function getData(Request $request)
     {
         $users = User::select(['id', 'name', 'email', 'user_verify', 'freeze_account', 'status'])
-            ->orderBy('id', 'DESC'); // 🔥 Latest users on top
+            ->orderBy('id', 'DESC'); // ðŸ”¥ Latest users on top
 
         return DataTables::of($users)
             ->addColumn('verify', function ($user) {
@@ -87,6 +87,11 @@ class UserController extends Controller
                 'thambnail_kyc' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
 
+        // // Debug input fields
+        // dd([
+        //     'location' => $request->input('location'),
+        //     'user_location' => $request->input('user_location')
+        // ]);
             // -----------------------
             // 1. Handle User Insert
             // -----------------------
@@ -133,8 +138,12 @@ class UserController extends Controller
                 'education', 'relationship_status', 'religion', 'location','occupation',
                 'love_goals', 'looking_in_partner', 'age_range_in_partner_min',
                 'age_range_in_partner_max', 'partner_distance_min', 'partner_distance_max',
-                'partner_height_min', 'partner_height_max'
+                'partner_height_min', 'partner_height_max',
+
             ]);
+
+            // Explicitly assign user_location
+            $profileData['user_location'] = $request->input('user_location');
 
             if ($request->dob) {
                 $profileData['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
@@ -142,11 +151,12 @@ class UserController extends Controller
 
             foreach (['language_speak', 'sports', 'entertainment', 'my_interests', 'iam_looking_for', 'iam_seeking', 'pets', 'partner_body_type',
                 'partner_relationship_status', 'partner_eye_color','partner_hair_color','partner_smoking_habits', 'partner_eating_habits', 'partner_children','partner_occupation', 'partner_education', 'partner_religion',
-                'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits' ,'partner_pets', 'partner_sports', 'partner_entertainment'] as $field) {
+                'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits' ,'partner_pets', 'partner_sports', 'goals_and_dreams', 'partner_entertainment'] as $field) {
                 $profileData[$field] = is_array($request->$field)
                     ? implode(',', $request->$field)
                     : $request->$field;
             }
+
 
             // Handle gallery photo uploads
             for ($i = 1; $i <= 6; $i++) {
@@ -158,9 +168,9 @@ class UserController extends Controller
             }
 
             $profileData['user_id'] = $user->id;
-
             UserProfile::create($profileData);
             Log::info('User profile created successfully for user:', ['user_id' => $user->id]);
+
 
             // -----------------------
             // 4. Firebase Sync (Optional - can fail without affecting user creation)
@@ -374,8 +384,9 @@ class UserController extends Controller
         if ($request->dob) {
             $profileData['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->dob)->format('Y-m-d');
         }
+
         if ($request->user_location) {
-            $profileData['location'] = $request->user_location;
+            $profileData['user_location'] = $request->user_location;
         }
 
         $arrayFields = [
@@ -384,7 +395,7 @@ class UserController extends Controller
             'partner_relationship_status', 'partner_eye_color', 'partner_hair_color',
             'partner_smoking_habits', 'partner_eating_habits', 'partner_children',
             'partner_occupation', 'partner_education', 'partner_religion',
-            'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits', 'partner_pets', 'partner_sports', 'partner_entertainment'
+            'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits', 'partner_pets', 'partner_sports', 'goals_and_dreams', 'partner_entertainment'
         ];
 
         foreach ($arrayFields as $field) {
