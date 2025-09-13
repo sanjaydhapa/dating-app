@@ -746,7 +746,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    {{-- <div class="col-md-4">
                                         <div class="form-group">
                                             <h5>My Interests <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -778,7 +778,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <h5>I am Looking For <span class="text-danger">*</span></h5>
@@ -2296,7 +2296,8 @@
                 if (!postalCode || !city || !country) {
                     return data.display_name || "Address not found";
                 }
-                return `${postalCode} ${city}, ${country}`;
+                // return `${postalCode} ${city}, ${country}`;
+                return data.display_name;
             } catch (err) {
                 console.error("Reverse geocode failed:", err.message);
                 return "Error fetching address";
@@ -2365,6 +2366,145 @@
     <!-- Partner Preference Multiselect JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // User Profile Multiselect Dropdowns
+
+            // Language Speak Multiselect
+            const languageButton = document.getElementById('languageSpeakDropdownButton');
+            const languageCheckboxes = document.querySelectorAll('input[name="language_speak[]"]');
+
+            function updateLanguageButton() {
+                let selected = [];
+                languageCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (languageButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Languages';
+                    languageButton.textContent = buttonText;
+                }
+            }
+
+            if (languageCheckboxes.length > 0) {
+                languageCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateLanguageButton);
+                });
+                updateLanguageButton();
+            }
+
+            // Sports Multiselect
+            const sportsButton = document.getElementById('sportsDropdownButton');
+            const sportsCheckboxes = document.querySelectorAll('input[name="sports[]"]');
+
+            function updateSportsButton() {
+                let selected = [];
+                sportsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (sportsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Sports';
+                    sportsButton.textContent = buttonText;
+                }
+            }
+
+            if (sportsCheckboxes.length > 0) {
+                sportsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateSportsButton);
+                });
+                updateSportsButton();
+            }
+
+            // Entertainment Multiselect
+            const entertainmentButton = document.getElementById('entertainmentDropdownButton');
+            const entertainmentCheckboxes = document.querySelectorAll('input[name="entertainment[]"]');
+
+            function updateEntertainmentButton() {
+                let selected = [];
+                entertainmentCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (entertainmentButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Entertainment';
+                    entertainmentButton.textContent = buttonText;
+                }
+            }
+
+            if (entertainmentCheckboxes.length > 0) {
+                entertainmentCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateEntertainmentButton);
+                });
+                updateEntertainmentButton();
+            }
+
+            // I am Looking For Multiselect
+            const lookingForButton = document.getElementById('lookingForDropdownButton');
+            const lookingForCheckboxes = document.querySelectorAll('input[name="iam_looking_for[]"]');
+
+            function updateLookingForButton() {
+                let selected = [];
+                lookingForCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (lookingForButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Option';
+                    lookingForButton.textContent = buttonText;
+                }
+            }
+
+            if (lookingForCheckboxes.length > 0) {
+                lookingForCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateLookingForButton);
+                });
+                updateLookingForButton();
+            }
+
+            // I Am Seeking Multiselect
+            const seekingButton = document.getElementById('iamSeekingDropdownButton');
+            const seekingCheckboxes = document.querySelectorAll('input[name="iam_seeking[]"]');
+
+            function updateSeekingButton() {
+                let selected = [];
+                seekingCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (seekingButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Options';
+                    seekingButton.textContent = buttonText;
+                }
+            }
+
+            if (seekingCheckboxes.length > 0) {
+                seekingCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateSeekingButton);
+                });
+                updateSeekingButton();
+            }
+
+            // Prevent dropdown from closing when clicking inside
+            document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+
             // Partner Body Type Multiselect
             const partnerBodyTypeButton = document.getElementById('partnerBodyTypeDropdownButton');
             const partnerBodyTypeCheckboxes = document.querySelectorAll('input[name="partner_body_type[]"]');

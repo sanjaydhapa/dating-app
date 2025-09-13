@@ -768,7 +768,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    @php
+                                    {{-- @php
                                         $selectedInterests = old('my_interests', $selectedInterests ?? []);
                                     @endphp
                                     <div class="col-md-4">
@@ -804,7 +804,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     @php
                                         $selectedLookingFor = old('iam_looking_for', $selectedLookingFor ?? []);
                                     @endphp
