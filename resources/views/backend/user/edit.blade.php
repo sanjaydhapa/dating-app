@@ -25,7 +25,7 @@
                             <div class="tab-pane active" id="content" role="tabpanel">
                                 <h3>User</h3>
                                 <div class="row"> <!-- start 1nd row  -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>User Name <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -38,7 +38,7 @@
                                         </div>
                                     </div> <!-- end col md 4 -->
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Nick Name <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -50,7 +50,7 @@
                                             </div>
                                         </div>
                                     </div> <!-- end col md 4 -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Email<span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -64,7 +64,7 @@
                                     </div> <!-- end col md 4 -->
                                 </div> <!-- end 1nd row  -->
                                 <div class="row"> <!-- start 6th row  -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>User Profile Image<span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -76,7 +76,7 @@
                                             </div>
                                         </div>
                                     </div> <!-- end col md 4 -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         @if ($user->profile_photo_path)
                                             <img src="{{ asset('storage/' . $user->profile_photo_path) }}" id="mainThmb"
                                                  style="max-width: 150px; height: auto;">
@@ -87,7 +87,7 @@
                                 <hr>
                                 <h3>KYC</h3>
                                 <div class="row"> <!-- start 1nd row  -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Country <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -106,7 +106,7 @@
                                             </div>
                                         </div>
                                     </div> <!-- end col md 4 -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>User Id Type <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -126,7 +126,7 @@
                                     </div> <!-- end col md 4 -->
                                 </div> <!-- end 1nd row  -->
                                 <div class="row"> <!-- start 6th row  -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Identity Document<span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -139,7 +139,7 @@
                                             </div>
                                         </div>
                                     </div> <!-- end col md 4 -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <img id="mainThmb_kyc"
                                              src="{{ $kycDetail && $kycDetail->id_document ? asset('storage/' . $kycDetail->id_document) : '' }}"
                                              style="max-width: 150px; height: auto; {{ !$kycDetail || !$kycDetail->id_document ? 'display: none;' : '' }}">
@@ -149,7 +149,7 @@
                                 <hr>
                                 <h3>Profile</h3>
                                 <div class="row"> <!-- start 1nd row  -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Date of Birth <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -162,7 +162,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Age</h5>
                                             <div class="controls">
@@ -171,7 +171,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Gender <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -202,7 +202,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Height <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -221,7 +221,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Body Type <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -240,7 +240,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Eye Color <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -259,7 +259,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Hair Color <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -278,7 +278,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Sleeping Habits <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -297,7 +297,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Love Language <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -316,7 +316,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Children <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -335,7 +335,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Financial Status <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -354,7 +354,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Dress Style <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -373,7 +373,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Pets <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -407,7 +407,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Zodiac Sign <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -426,7 +426,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Vaccinated <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -445,7 +445,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Drinking Habits <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -464,7 +464,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Smoking Habits <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -483,7 +483,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Eating Habits <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -502,7 +502,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Communication Style <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -521,7 +521,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Workout <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -540,7 +540,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Education <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -559,7 +559,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Occupation <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -579,7 +579,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Language Speak <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -616,7 +616,7 @@
                                     </div>
 
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Relationship Status <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -635,7 +635,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Religion <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -654,7 +654,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    {{-- <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Location <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -672,8 +672,8 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-4">
+                                    </div> --}}
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Country <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -706,10 +706,10 @@
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-group">
-                                            <h5>Love Goals <span class="text-danger">*</span></h5>
+                                            <h5>Life Goals <span class="text-danger">*</span></h5>
                                             <div class="controls">
                                                 <textarea name="love_goals" class="form-control" rows="4"
-                                                          placeholder="Describe your love goals...">{{ old('love_goals', $profile->love_goals ?? '') }}</textarea>
+                                                          placeholder="Describe your life goals...">{{ old('love_goals', $profile->love_goals ?? '') }}</textarea>
                                                 @error('love_goals')
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
@@ -731,7 +731,7 @@
                                     @php
                                         $selectedSports = old('sports', $selectedSports ?? []);
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Sports <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -768,7 +768,7 @@
                                     @php
                                         $selectedEntertainment = old('entertainment', $selectedEntertainment ?? []);
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Entertainment <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -805,7 +805,7 @@
                                     {{-- @php
                                         $selectedInterests = old('my_interests', $selectedInterests ?? []);
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>My Interests <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -842,7 +842,7 @@
                                     @php
                                         $selectedLookingFor = old('iam_looking_for', $selectedLookingFor ?? []);
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>I am Looking For <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -879,7 +879,7 @@
                                     @php
                                         $selectedSeeking = old('iam_seeking', $selectedSeeking ?? []);
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>I Am Seeking <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -928,7 +928,7 @@
                                             $profile->age_range_in_partner_max ?? 60,
                                         );
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Preferred Age Range <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -968,7 +968,7 @@
                                             $profile->partner_distance_max ?? 500,
                                         );
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Preferred Partner Distance (km) <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1001,7 +1001,7 @@
                                         $heightMin = old('partner_height_min', $profile->partner_height_min ?? 122);
                                         $heightMax = old('partner_height_max', $profile->partner_height_max ?? 213);
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Preferred Partner Height (cm) <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1039,7 +1039,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Body Type <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1092,9 +1092,9 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
-                                            <h5>Relationship Status <span class="text-danger">*</span></h5>
+                                            <h5>Partner Relationship Status<span class="text-danger">*</span></h5>
                                             <div class="controls">
                                                 {{--                                                <select name="partner_relationship_status" class="form-control">--}}
                                                 {{--                                                    <option value="">Select Relationship Status</option>--}}
@@ -1110,7 +1110,7 @@
                                                             class="btn btn-default form-control dropdown-toggle text-center"
                                                             data-bs-toggle="dropdown" aria-expanded="false"
                                                             id="relationshipStatusDropdownButton">
-                                                        Select Relationship Status
+                                                        Select Partner Relationship Status
                                                     </button>
 
                                                     <div class="dropdown-menu p-3"
@@ -1145,7 +1145,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Eye Color <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1198,7 +1198,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Hair Color <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1251,7 +1251,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Smoking Habits <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1304,7 +1304,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Eating Habits <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1357,7 +1357,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Drinking Habits <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1410,7 +1410,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Children <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1463,7 +1463,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Occupation <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1516,7 +1516,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Education <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1569,7 +1569,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Religion <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1621,7 +1621,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Financial Status <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1674,7 +1674,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Dress Style <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1727,7 +1727,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Vaccination Status <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1780,7 +1780,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Pets <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1823,7 +1823,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Sports <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1869,7 +1869,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Partner Entertainment <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1903,6 +1903,41 @@
                                             </div>
                                         </div>
                                     </div>
+                                    {{-- Using $selectedPartnerZodiacSign from controller --}}
+                                    <div class="col-md-6 col-sm-6">
+                                        <div class="form-group">
+                                            <h5>Partner Zodiac Sign <span class="text-danger">*</span></h5>
+                                            <div class="controls">
+                                                <div class="dropdown">
+                                                    <button type="button"
+                                                            class="btn btn-default form-control dropdown-toggle"
+                                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                                            id="partnerZodiacSignDropdownButton">
+                                                        Select Zodiac Sign
+                                                    </button>
+                                                    <div class="dropdown-menu p-3"
+                                                         style="width: 100%; max-height: 300px; overflow-y: auto;">
+                                                        @foreach (config('profile_fields.partner_zodiac_sign') as $zodiacSign)
+                                                            <div class="form-check">
+                                                                <input type="checkbox" class="form-check-input"
+                                                                       id="partner_zodiac_sign_{{ $loop->index }}"
+                                                                       name="partner_zodiac_sign[]"
+                                                                       value="{{ $zodiacSign }}"
+                                                                    {{ in_array($zodiacSign, $selectedPartnerZodiacSign) ? 'checked' : '' }}>
+                                                                <label class="form-check-label"
+                                                                       for="partner_zodiac_sign_{{ $loop->index }}">
+                                                                    {{ $zodiacSign }}
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                @error('partner_zodiac_sign')
+                                                <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
                                     @php
                                         $selectedGoalsAndDreams = old('goals_and_dreams', $profile->goals_and_dreams ?? []);
                                         if (is_string($selectedGoalsAndDreams)) {
@@ -1912,7 +1947,7 @@
                                             );
                                         }
                                     @endphp
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Goals And Dreams<span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1949,7 +1984,7 @@
                                     </div>
                                 </div> <!-- end 1nd row  -->
                                 {{-- <div class="row"> <!-- start 6th row  -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
                                             <h5>Main Thambnail <span class="text-danger">*</span></h5>
                                             <div class="controls">
@@ -1961,7 +1996,7 @@
                                             </div>
                                         </div>
                                     </div> <!-- end col md 4 -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 col-sm-6">
 
                                         @if ($user->profile_photo_path)
                                             <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
@@ -1971,7 +2006,7 @@
                                 </div> <!-- end 6th row  --> --}}
                                 <div class="row"> <!-- start gallery photos row -->
                                     @for ($i = 1; $i <= 6; $i++)
-                                        <div class="col-md-4">
+                                        <div class="col-md-6 col-sm-6">
                                             <div class="form-group">
                                                 <h5>Gallery Photo {{ $i }} <span class="text-danger">*</span>
                                                 </h5>
@@ -2593,7 +2628,7 @@
                 if (relationshipStatusButton) {
                     const buttonText = selected.length > 0 ?
                         (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
-                        'Select Relationship Status';
+                        'Select Partner Relationship Status';
                     relationshipStatusButton.textContent = buttonText;
                 }
             }
@@ -2993,6 +3028,33 @@
                     cb.addEventListener('change', updatePartnerEntertainmentButton);
                 });
                 setTimeout(updatePartnerEntertainmentButton, 100);
+            }
+
+            // Partner Zodiac Sign Multiselect
+            const partnerZodiacSignButton = document.getElementById('partnerZodiacSignDropdownButton');
+            const partnerZodiacSignCheckboxes = document.querySelectorAll('input[name="partner_zodiac_sign[]"]');
+
+            function updatePartnerZodiacSignButton() {
+                let selected = [];
+                partnerZodiacSignCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerZodiacSignButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Zodiac Sign';
+                    partnerZodiacSignButton.textContent = buttonText;
+                }
+                console.log('Partner Zodiac Sign selected:', selected);
+            }
+
+            if (partnerZodiacSignCheckboxes.length > 0) {
+                partnerZodiacSignCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerZodiacSignButton);
+                });
+                setTimeout(updatePartnerZodiacSignButton, 100);
             }
 
             // Goals and Dreams Multiselect

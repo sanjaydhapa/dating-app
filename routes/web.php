@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Frontend\LoginController;
@@ -23,14 +24,14 @@ use App\Http\Controllers\Backend\AdminUserDataController;
 use Kreait\Firebase\Factory;
 
 Route::get('/firebase-test', function () {
-   
-   
+
+
    $firebase = (new Factory)
     ->withServiceAccount(config('firebase.credentials'))
     ->withDatabaseUri(config('firebase.projects.app.database.url'));
 
     $database = $firebase->createDatabase();
-    
+
     $database->getReference('users/123')->set([
         'name' => 'Test User',
         'email' => 'test@example.com'
@@ -47,6 +48,39 @@ Route::get('/clear-cache', function () {
     Artisan::call('cache:clear');
     Artisan::call('config:cache');
     return 'clear successfully !';
+});
+
+// run migrations route
+Route::get('/migrate', function () {
+    try {
+        Artisan::call('migrate');
+        $output = Artisan::output();
+        return '<pre>Migration executed successfully:<br>' . $output . '</pre>';
+    } catch (Exception $e) {
+        return 'Migration failed: ' . $e->getMessage();
+    }
+});
+
+// migration status route
+Route::get('/migrate-status', function () {
+    try {
+        Artisan::call('migrate:status');
+        $output = Artisan::output();
+        return '<pre>' . $output . '</pre>';
+    } catch (Exception $e) {
+        return 'Migration status failed: ' . $e->getMessage();
+    }
+});
+
+// migrate rollback route (use with caution)
+Route::get('/migrate-rollback', function () {
+    try {
+        Artisan::call('migrate:rollback', ['--step' => 1]);
+        $output = Artisan::output();
+        return '<pre>Rollback executed:<br>' . $output . '</pre>';
+    } catch (Exception $e) {
+        return 'Rollback failed: ' . $e->getMessage();
+    }
 });
 
 
@@ -70,8 +104,8 @@ Route::get('/service/{slug}',[FrontController::class,'service']);
 
 
 Route::get('/', function () {
-   
-    return view('welcome'); 
+
+    return view('welcome');
 });
 
 
@@ -80,7 +114,7 @@ Route::get('/', function () {
 //, 'middleware'=>['admin:admin']
 	Route::get('/login', [AdminController::class, 'loginForm']);
 	Route::post('/login',[AdminController::class, 'login'])->name('admin.login');
-	
+
 Route::group(['prefix'=> 'admin'], function(){
 	//Route::get('/login', [AdminController::class, 'loginForm']);
 	//Route::post('/login',[AdminController::class, 'login'])->name('admin.login');
