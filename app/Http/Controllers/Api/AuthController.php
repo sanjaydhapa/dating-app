@@ -318,15 +318,23 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid Google token'], 401);
         }
 
-        $user = User::updateOrCreate(
-            ['email' => $payload['email']],
-            [
+        $user = User::where('email', $payload['email'])->first();
+
+        if ($user) {
+            $user->update([
+                'name' => $payload['name'] ?? $user->name,
+                'nick_name' => $payload['given_name'] ?? $user->nick_name,
+            ]);
+        } else {
+            // New user: Create with default status 2
+            $user = User::create([
+                'email' => $payload['email'],
                 'name' => $payload['name'] ?? $payload['email'],
+                'nick_name' => $payload['given_name'] ?? null,
                 'password' => bcrypt(\Illuminate\Support\Str::random(16)),
                 'status' => 2,
-                'nick_name' => $payload['given_name'] ?? null,
-            ]
-        );
+            ]);
+        }
 
         // Check if user is inactive
         if ($user->status == 0) {
