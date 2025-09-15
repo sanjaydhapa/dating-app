@@ -5,7 +5,7 @@
 @endsection
 @section('admin')
 <div class="container-full">
-    
+
     <section class="content">
 		<div class="row">
             <div class="col-12">
@@ -13,7 +13,7 @@
                 <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">User List</h3>
-                    
+
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body">
@@ -26,8 +26,8 @@
                                 <th>Verify</th>
                                 <th>Freeze</th>
                                 <th>Status</th>
-                                                                                            
-                                <th>Action</th>                                
+
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -55,45 +55,45 @@
                                     @else
                                    <span class="badge badge-pill badge-danger"> InActive </span>
                                     @endif
-                                </td> 
-                                                               
+                                </td>
+
                                 <td>
                                     <a href="{{ route('user.edit', $user->id) }}" class="btn btn-circle btn-info btn-sm mb-1" title="Edit">
                                         <i class="fa fa-edit" style="font-size:1rem"></i>
                                     </a>
-                                
+
                                     <a href="{{ route('user.delete', $user->id) }}" class="btn btn-circle btn-danger btn-sm mb-1" id="delete" title="Delete">
                                         <i class="fa fa-trash" style="font-size:1rem"></i>
                                     </a>
-                                
+
                                     {{-- Toggle Verify/Unverify --}}
                                     <a href="{{ route('user.toggleVerify', $user->id) }}" class="btn btn-sm btn-warning mb-1">
                                         {{ $user->user_verify ? 'Unverify' : 'Verify' }}
                                     </a>
-                                
+
                                     {{-- Toggle Freeze/Unfreeze --}}
                                     <a href="{{ route('user.toggleFreeze', $user->id) }}" class="btn btn-sm btn-secondary mb-1">
                                         {{ $user->freeze_account ? 'Unfreeze' : 'Freeze' }}
                                     </a>
-                                
+
                                     {{-- Toggle Active/Inactive --}}
                                     <a href="{{ route('user.toggleStatus', $user->id) }}" class="btn btn-sm btn-primary mb-1">
-                                        {{ $user->status!=1 ? 'Deactivate' : 'Activate' }}
+                                        {{ $user->status!=1 ? 'Activate' : 'Deactivate' }}
                                     </a>
-                                    
-                                </td>                              
+
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
-                        
+
                         </table>
                     </div>
                 </div>
                 <!-- /.box-body -->
                 </div>
-                        
+
             </div>
-            
+
         <div>
     </section>
 </div>
@@ -104,16 +104,16 @@
 <script src="{{ asset('./assets/vendor_components/select2/dist/js/select2.full.js') }}"></script>
  <script>
  $(function () {
-  
+
 
     //Initialize Select2 Elements
     $('.select2').select2();
-    
-    
+
+
      $('#cat').on('change',function(){
          this.form.submit();
      })
-     
+
  });
 
  </script>

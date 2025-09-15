@@ -912,6 +912,50 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @php
+                                        $selectedGoalsAndDreamsProfile = old('goals_and_dreams', $profile->goals_and_dreams ?? []);
+                                        if (is_string($selectedGoalsAndDreamsProfile)) {
+                                            $selectedGoalsAndDreamsProfile = array_map(
+                                                'trim',
+                                                explode(',', $selectedGoalsAndDreamsProfile),
+                                            );
+                                        }
+                                    @endphp
+                                    <div class="col-md-6 col-sm-6">
+                                        <div class="form-group">
+                                            <h5>Goals And Dreams<span class="text-danger">*</span></h5>
+                                            <div class="controls">
+                                                <div class="dropdown">
+                                                    <button type="button"
+                                                            class="btn btn-default form-control dropdown-toggle text-center"
+                                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                                            id="goalsAndDreamsProfileDropdownButton">
+                                                        Select Goals and Dreams
+                                                    </button>
+
+                                                    <div class="dropdown-menu p-3"
+                                                         style="width: 100%; max-height: 300px; overflow-y: auto;">
+                                                        @foreach (config('profile_fields.goals_and_dreams') as $goals)
+                                                            <div class="form-check">
+                                                                <input type="checkbox" class="form-check-input"
+                                                                       id="goals_and_dreams_profile_{{ $loop->index }}"
+                                                                       name="goals_and_dreams[]"
+                                                                       value="{{ $goals }}"
+                                                                    {{ in_array($goals, $selectedGoalsAndDreamsProfile) ? 'checked' : '' }}>
+                                                                <label class="form-check-label"
+                                                                       for="goals_and_dreams_profile_{{ $loop->index }}">
+                                                                    {{ $goals }}
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                @error('goals_and_dreams')
+                                                <span class="text-danger">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="col-md-12">
                                         <hr>
                                         <h3 class="pb-5">Desired partner</h3>
@@ -1939,11 +1983,11 @@
                                         </div>
                                     </div>
                                     @php
-                                        $selectedGoalsAndDreams = old('goals_and_dreams', $profile->goals_and_dreams ?? []);
-                                        if (is_string($selectedGoalsAndDreams)) {
-                                            $selectedGoalsAndDreams = array_map(
+                                        $selectedPartnerGoalsAndDreams = old('partner_goals_and_dreams', $profile->partner_goals_and_dreams ?? []);
+                                        if (is_string($selectedPartnerGoalsAndDreams)) {
+                                            $selectedPartnerGoalsAndDreams = array_map(
                                                 'trim',
-                                                explode(',', $selectedGoalsAndDreams),
+                                                explode(',', $selectedPartnerGoalsAndDreams),
                                             );
                                         }
                                     @endphp
@@ -1955,7 +1999,7 @@
                                                     <button type="button"
                                                             class="btn btn-default form-control dropdown-toggle text-center"
                                                             data-bs-toggle="dropdown" aria-expanded="false"
-                                                            id="goalsAndDreamsDropdownButton">
+                                                            id="partnerGoalsAndDreamsDropdownButton">
                                                         Select Partner Goals And Dreams
                                                     </button>
 
@@ -1964,19 +2008,19 @@
                                                         @foreach (config('profile_fields.goals_and_dreams') as $goals)
                                                             <div class="form-check">
                                                                 <input type="checkbox" class="form-check-input"
-                                                                       id="goals_and_dreams_{{ $loop->index }}"
-                                                                       name="goals_and_dreams[]"
+                                                                       id="partner_goals_and_dreams_{{ $loop->index }}"
+                                                                       name="partner_goals_and_dreams[]"
                                                                        value="{{ $goals }}"
-                                                                    {{ in_array($goals, $selectedGoalsAndDreams) ? 'checked' : '' }}>
+                                                                    {{ in_array($goals, $selectedPartnerGoalsAndDreams) ? 'checked' : '' }}>
                                                                 <label class="form-check-label"
-                                                                       for="goals_and_dreams_{{ $loop->index }}">
+                                                                       for="partner_goals_and_dreams_{{ $loop->index }}">
                                                                     {{ $goals }}
                                                                 </label>
                                                             </div>
                                                         @endforeach
                                                     </div>
                                                 </div>
-                                                @error('goals_and_dreams')
+                                                @error('partner_goals_and_dreams')
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -3057,30 +3101,56 @@
                 setTimeout(updatePartnerZodiacSignButton, 100);
             }
 
-            // Goals and Dreams Multiselect
-            const goalsAndDreamsButton = document.getElementById('goalsAndDreamsDropdownButton');
-            const goalsAndDreamsCheckboxes = document.querySelectorAll('input[name="goals_and_dreams[]"]');
+            // Goals and Dreams Profile Multiselect
+            const goalsAndDreamsProfileButton = document.getElementById('goalsAndDreamsProfileDropdownButton');
+            const goalsAndDreamsProfileCheckboxes = document.querySelectorAll('input[name="goals_and_dreams[]"]');
 
-            function updateGoalsAndDreamsButton() {
+            function updateGoalsAndDreamsProfileButton() {
                 let selected = [];
-                goalsAndDreamsCheckboxes.forEach(cb => {
+                goalsAndDreamsProfileCheckboxes.forEach(cb => {
                     if (cb.checked) {
                         selected.push(cb.value);
                     }
                 });
-                if (goalsAndDreamsButton) {
+                if (goalsAndDreamsProfileButton) {
                     const buttonText = selected.length > 0 ?
                         (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
-                        'Select Partner Goals And Dreams';
-                    goalsAndDreamsButton.textContent = buttonText;
+                        'Select Goals and Dreams';
+                    goalsAndDreamsProfileButton.textContent = buttonText;
                 }
             }
 
-            if (goalsAndDreamsCheckboxes.length > 0) {
-                goalsAndDreamsCheckboxes.forEach(cb => {
-                    cb.addEventListener('change', updateGoalsAndDreamsButton);
+            if (goalsAndDreamsProfileCheckboxes.length > 0) {
+                goalsAndDreamsProfileCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updateGoalsAndDreamsProfileButton);
                 });
-                setTimeout(updateGoalsAndDreamsButton, 100);
+                setTimeout(updateGoalsAndDreamsProfileButton, 100);
+            }
+
+            // Partner Goals and Dreams Multiselect
+            const partnerGoalsAndDreamsButton = document.getElementById('partnerGoalsAndDreamsDropdownButton');
+            const partnerGoalsAndDreamsCheckboxes = document.querySelectorAll('input[name="partner_goals_and_dreams[]"]');
+
+            function updatePartnerGoalsAndDreamsButton() {
+                let selected = [];
+                partnerGoalsAndDreamsCheckboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selected.push(cb.value);
+                    }
+                });
+                if (partnerGoalsAndDreamsButton) {
+                    const buttonText = selected.length > 0 ?
+                        (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
+                        'Select Partner Goals And Dreams';
+                    partnerGoalsAndDreamsButton.textContent = buttonText;
+                }
+            }
+
+            if (partnerGoalsAndDreamsCheckboxes.length > 0) {
+                partnerGoalsAndDreamsCheckboxes.forEach(cb => {
+                    cb.addEventListener('change', updatePartnerGoalsAndDreamsButton);
+                });
+                setTimeout(updatePartnerGoalsAndDreamsButton, 100);
             }
         });
     </script>

@@ -155,7 +155,7 @@ class UserController extends Controller
 
             foreach (['language_speak', 'sports', 'entertainment', 'my_interests', 'iam_looking_for', 'iam_seeking', 'pets', 'partner_body_type',
                 'partner_relationship_status', 'partner_eye_color','partner_hair_color','partner_smoking_habits', 'partner_eating_habits', 'partner_children','partner_occupation', 'partner_education', 'partner_religion',
-                'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits' ,'partner_pets', 'partner_sports', 'goals_and_dreams', 'partner_entertainment', 'partner_zodiac_sign'] as $field) {
+                'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits' ,'partner_pets', 'partner_sports', 'goals_and_dreams', 'partner_goals_and_dreams', 'partner_entertainment', 'partner_zodiac_sign'] as $field) {
                 $profileData[$field] = is_array($request->$field)
                     ? implode(',', $request->$field)
                     : $request->$field;
@@ -407,7 +407,7 @@ class UserController extends Controller
             'partner_relationship_status', 'partner_eye_color', 'partner_hair_color',
             'partner_smoking_habits', 'partner_eating_habits', 'partner_children',
             'partner_occupation', 'partner_education', 'partner_religion',
-            'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits', 'partner_pets', 'partner_sports', 'goals_and_dreams', 'partner_entertainment', 'partner_zodiac_sign'
+            'partner_financial_status', 'partner_dress_style', 'partner_vaccinated','partner_drinking_habits', 'partner_pets', 'partner_sports', 'goals_and_dreams', 'partner_goals_and_dreams', 'partner_entertainment', 'partner_zodiac_sign'
         ];
 
         foreach ($arrayFields as $field) {
