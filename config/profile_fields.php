@@ -313,7 +313,7 @@ return [
         'Capricorn',
         'Aquarius',
         'Pisces',
-//        'Sagittarius',
+        'Sagittarius',
     ],
     'vaccinated' => [
         'Yes - Fully Vaccinated',
@@ -571,6 +571,7 @@ return [
         'Capricorn',
         'Aquarius',
         'Pisces',
+        'Sagittarius',
     ],
     'goals_and_dreams' => [
         'Feel safe in a relationship',

@@ -1949,14 +1949,14 @@
                                     @endphp
                                     <div class="col-md-6 col-sm-6">
                                         <div class="form-group">
-                                            <h5>Goals And Dreams<span class="text-danger">*</span></h5>
+                                            <h5>Partner Goals And Dreams<span class="text-danger">*</span></h5>
                                             <div class="controls">
                                                 <div class="dropdown">
                                                     <button type="button"
                                                             class="btn btn-default form-control dropdown-toggle text-center"
                                                             data-bs-toggle="dropdown" aria-expanded="false"
                                                             id="goalsAndDreamsDropdownButton">
-                                                        Select Goals And Dreams
+                                                        Select Partner Goals And Dreams
                                                     </button>
 
                                                     <div class="dropdown-menu p-3"
@@ -3071,7 +3071,7 @@
                 if (goalsAndDreamsButton) {
                     const buttonText = selected.length > 0 ?
                         (selected.length > 3 ? selected.slice(0, 3).join(', ') + ` +${selected.length - 3} more` : selected.join(', ')) :
-                        'Select Goals And Dreams';
+                        'Select Partner Goals And Dreams';
                     goalsAndDreamsButton.textContent = buttonText;
                 }
             }

@@ -9,88 +9,115 @@ use App\Models\UserAction;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 use App\Services\FirebaseService;
 use Kreait\Firebase\Factory;
+
 class DashbaordController extends Controller
 {
     use ApiResponse;
-    public function __construct(protected FirebaseService $firebase) {
+    public function __construct(protected FirebaseService $firebase)
+    {
         $this->firebaseservice = $firebase;
     }
-    
-    public function users(Request $request){
+
+    public function users(Request $request)
+    {
         //dd($request->all());
         $currentUserId = auth()->id();
-        
+
         $currentUser = User::with('profile')->findOrFail($currentUserId);
         $currentProfile = $currentUser->profile;
         //$blockedIds = auth()->user()->blocks()->pluck('blocked_user_id');
         //$age = $currentProfile->dob ? Carbon::parse($currentProfile->dob)->age : null;
-        
+
+        // Get current user's location
+        $currentLat = $currentProfile->latitude ?? null;
+        $currentLng = $currentProfile->longitude ?? null;
+
+        // Default radius in kilometers
+        $radiusKm = 50;
+
         $blockedIds = UserAction::where('user_id', auth()->id())
-                    ->where('blocked', true)
-                    ->pluck('target_user_id');
-        
+            ->where('blocked', true)
+            ->pluck('target_user_id');
+
         // $users = User::with('profile')
         //     ->where('status', 1)
         //     ->where('id', '!=', $currentUserId)
         //     ->whereNotIn('id', $blockedIds)
         //     ->latest()
         //     ->get();
-        
+
         // Extract filters
         $distanceMin = $request->input('partner_distance_min');
         $distanceMax = $request->input('partner_distance_max');
         $heightMin = $request->input('partner_height_min');
         $heightMax = $request->input('partner_height_max');
-        
+
         $ageMin = $request->input('partner_age_min');
         $ageMax = $request->input('partner_age_max');
-        
+
         $location = $request->input('location');
+
         $orderBy = $request->input('order_by', 'new');
         $search = $request->input('search');
         $usersQuery = User::with(['profile', 'kyc', 'actionByCurrentUser'])  //
-        ->where('status', 1)
-        ->where('freeze_account', false)
-        ->where('id', '!=', $currentUserId)
-        ->whereNotIn('id', $blockedIds)
-        ->whereHas('profile', function ($q) use ($heightMin, $heightMax, $ageMin, $ageMax,$currentProfile) {
-            if ($heightMin !== null && $heightMax !== null) {
-                $q->whereBetween('height', [$heightMin, $heightMax]);
-            }
-        
-            if ($ageMin !== null && $ageMax !== null) {
-                $q->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN ? AND ?', [(int)$ageMin, (int)$ageMax]);
-            }
-        //dd($currentProfile->iam_seeking);
-            if (!empty($currentProfile->iam_seeking)) {
-                $rawGenders = array_map('trim', explode(',', $currentProfile->iam_seeking));
-                
-                if (!in_array('Couple', $rawGenders) && !in_array('No Preference', array_map('strtolower', $rawGenders))) {
-                    $genderMap = [
-                        'Man' => 'Male',
-                        'Woman' => 'Female'
-                    ];
-                    $mappedGenders = array_filter(array_map(function ($g) use ($genderMap) {
-                        return $genderMap[$g] ?? null;
-                    }, $rawGenders));
-        
-                    if (!empty($mappedGenders)) {
-                        $q->whereIn('gender', $mappedGenders);
+            ->where('status', 1)
+            ->where('freeze_account', false)
+            ->where('id', '!=', $currentUserId)
+            ->whereNotIn('id', $blockedIds)
+            ->whereHas('profile', function ($q) use ($heightMin, $heightMax, $ageMin, $ageMax, $currentProfile, $currentLat, $currentLng, $radiusKm) {
+                if ($heightMin !== null && $heightMax !== null) {
+                    $q->whereBetween('height', [$heightMin, $heightMax]);
+                }
+
+                if ($ageMin !== null && $ageMax !== null) {
+                    $q->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN ? AND ?', [(int)$ageMin, (int)$ageMax]);
+                }
+
+                // Add distance filter if current user has location
+                if ($currentLat !== null && $currentLng !== null) {
+                    $q->whereRaw("
+                        (6371 * acos(
+                            cos(radians(?)) *
+                            cos(radians(latitude)) *
+                            cos(radians(longitude) - radians(?)) +
+                            sin(radians(?)) *
+                            sin(radians(latitude))
+                        )) <= ?
+                    ", [$currentLat, $currentLng, $currentLat, $radiusKm]);
+                }
+
+                //dd($currentProfile->iam_seeking);
+                if (!empty($currentProfile->iam_seeking)) {
+                    $rawGenders = array_map('trim', explode(',', $currentProfile->iam_seeking));
+
+                    if (!in_array('Couple', $rawGenders) && !in_array('No Preference', array_map('strtolower', $rawGenders))) {
+                        $genderMap = [
+                            'Man' => 'Male',
+                            'Woman' => 'Female'
+                        ];
+                        $mappedGenders = array_filter(array_map(function ($g) use ($genderMap) {
+                            return $genderMap[$g] ?? null;
+                        }, $rawGenders));
+
+                        if (!empty($mappedGenders)) {
+                            $q->whereIn('gender', $mappedGenders);
+                        }
                     }
                 }
-            }
-        
-            
-           
 
 
 
-/*
+
+
+
+                /*
             // Desired partner filters from current profile
             if (!empty($currentProfile->partner_body_type)) {
                 $q->where('body_type', $currentProfile->partner_body_type);
@@ -149,18 +176,17 @@ class DashbaordController extends Controller
             }
 
             */
-            
-        })
-        ->whereHas('kyc', function ($q) use ($location) {
-            if (!empty($location)) {
-                $q->where('location', 'like', '%' . $location . '%');
-            }
-        });
-        
+            })
+            ->whereHas('kyc', function ($q) use ($location) {
+                if (!empty($location)) {
+                    $q->where('location', 'like', '%' . $location . '%');
+                }
+            });
+
         if (!empty($search)) {
             $usersQuery->where('name', 'like', '%' . $search . '%');
         }
-        
+
         // Order by newest or oldest
         if ($orderBy === 'newest') {
             $usersQuery->orderBy('id', 'desc');
@@ -172,17 +198,17 @@ class DashbaordController extends Controller
 
         $users = $usersQuery->get();
 
-        
 
-        $usersFormatted = $users->map(function ($user) use ($currentProfile) {
+
+        $usersFormatted = $users->map(function ($user) use ($currentProfile, $currentLat, $currentLng) {
             $profile = $user->profile;
-    
+
             if (!$profile) return null;
-    
+
             $age = $profile->dob ? Carbon::parse($profile->dob)->age : null;
             $matchScore = 0;
             $totalCriteria = 10;
-    
+
             // Matching logic
             if ($currentProfile->partner_body_type === $profile->body_type) $matchScore++;
             if ($currentProfile->partner_eye_color === $profile->eye_color) $matchScore++;
@@ -193,17 +219,31 @@ class DashbaordController extends Controller
             if ($currentProfile->partner_religion === $profile->religion) $matchScore++;
             if ($currentProfile->partner_vaccinated === $profile->vaccinated) $matchScore++;
             if ($currentProfile->partner_pets === $profile->pets) $matchScore++;
-    
+
             // Sports & Entertainment match (partial)
             $userSports = explode(',', strtolower($profile->sports));
             $preferredSports = explode(',', strtolower($currentProfile->partner_sports));
             $intersectSports = array_intersect($userSports, $preferredSports);
             if (count($intersectSports)) $matchScore++;
-    
+
             $matchPercentage = round(($matchScore / $totalCriteria) * 100);
-    
 
+            // Calculate actual distance if both users have location
+            $distance = 'Location not available';
+            if ($currentLat && $currentLng && $profile->latitude && $profile->longitude) {
+                $earthRadius = 6371; // Earth's radius in kilometers
 
+                $dLat = deg2rad($profile->latitude - $currentLat);
+                $dLng = deg2rad($profile->longitude - $currentLng);
+
+                $a = sin($dLat/2) * sin($dLat/2) +
+                     cos(deg2rad($currentLat)) * cos(deg2rad($profile->latitude)) *
+                     sin($dLng/2) * sin($dLng/2);
+                $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+
+                $distanceKm = round($earthRadius * $c, 1);
+                $distance = $distanceKm . ' km away';
+            }
 
             $action = $user->actionByCurrentUser;
 
@@ -225,34 +265,34 @@ class DashbaordController extends Controller
                 'height' => $profile->height,
                 'gender' => $profile->gender,
                 'email' => $user->email,
-                'distance' => '1 km away',
-                'profile_photo_url' => $user->profile_photo_path 
-                    ? asset('storage/' . $user->profile_photo_path) 
+                'distance' => $distance,
+                'profile_photo_url' => $user->profile_photo_path
+                    ? asset('storage/' . $user->profile_photo_path)
                     : null,
                 'match_percentage' => $matchPercentage,
                 'user_verify' => $user->user_verify,
                 'action' => $actionStatus,
             ];
         })->filter(); // Remove nulls
-    
+
         return $this->success('Users fetched successfully', [
             'users' => $usersFormatted
         ]);
     }
-    
-    
+
+
     public function users_list(Request $request, $id = null)
     {
         try {
             $currentUserId = auth()->id();
             $currentUser = User::with('profile')->findOrFail($currentUserId);
             $currentProfile = $currentUser->profile;
-    
+
             // Helper to calculate match percentage
             $calculateMatch = function ($profile) use ($currentProfile) {
                 $matchScore = 0;
                 $totalCriteria = 10;
-    
+
                 if ($currentProfile->partner_body_type === $profile->body_type) $matchScore++;
                 if ($currentProfile->partner_eye_color === $profile->eye_color) $matchScore++;
                 if ($currentProfile->partner_hair_color === $profile->hair_color) $matchScore++;
@@ -262,16 +302,16 @@ class DashbaordController extends Controller
                 if ($currentProfile->partner_religion === $profile->religion) $matchScore++;
                 if ($currentProfile->partner_vaccinated === $profile->vaccinated) $matchScore++;
                 if ($currentProfile->partner_pets === $profile->pets) $matchScore++;
-    
+
                 // Sports matching
                 $userSports = explode(',', strtolower($profile->sports));
                 $preferredSports = explode(',', strtolower($currentProfile->partner_sports));
                 $intersectSports = array_intersect($userSports, $preferredSports);
                 if (count($intersectSports)) $matchScore++;
-    
+
                 return round(($matchScore / $totalCriteria) * 100);
             };
-    
+
             // Format photo URLs
             $formatGalleryPhotos = function ($profile) {
                 $url = fn($path) => $path ? asset('storage/' . $path) : null;
@@ -284,19 +324,19 @@ class DashbaordController extends Controller
                 $profile->gallery_photo6_url = $url($profile->gallery_photo6);
                 return $profile;
             };
-    
+
             if ($id) {
-                $user = User::with('profile','kyc','actionFromCurrentUser')->find($id);
-    
+                $user = User::with('profile', 'kyc', 'actionFromCurrentUser')->find($id);
+
                 if (!$user) {
                     return $this->error('User not found', [], 404);
                 }
-    
+
                 $profile = $user->profile;
                 if (!$profile) {
                     return $this->error('User profile not found', [], 404);
                 }
-    
+
                 $profile = $formatGalleryPhotos($profile);
                 $age = $profile->dob ? Carbon::parse($profile->dob)->age : null;
                 $matchPercentage = $calculateMatch($profile);
@@ -317,19 +357,19 @@ class DashbaordController extends Controller
                     'email' => $user->email,
                     'gender' => $profile->gender,
                     'distance' => '1 km away',
-                    'profile_photo_url' => $user->profile_photo_path 
-                        ? asset('storage/' . $user->profile_photo_path) 
+                    'profile_photo_url' => $user->profile_photo_path
+                        ? asset('storage/' . $user->profile_photo_path)
                         : null,
                     'match_percentage' => $matchPercentage,
                     'user_verify' => $user->user_verify,
                     'profile' => $profile,
-                    'kyc'=>$user->kyc,
+                    'kyc' => $user->kyc,
                     'action_from_current_user' => $user->actionFromCurrentUser ? $user->actionFromCurrentUser->only(['liked', 'superliked', 'blocked', 'save', 'dateinvite', 'dateAdminers']) : null,
                 ];
-    
+
                 return $this->success('User fetched successfully', ['user' => $userFormatted]);
             } else {
-                
+
                 $genderMap = [
                     'Man' => 'Male',
                     'Woman' => 'Female'
@@ -338,14 +378,14 @@ class DashbaordController extends Controller
                 $excludedIds = UserAction::where('user_id', $currentUserId)
                     ->where(function ($query) {
                         $query->where('liked', true)
-                              ->orWhere('superliked', true)
-                              ->orWhere('blocked', true);
+                            ->orWhere('superliked', true)
+                            ->orWhere('blocked', true);
                     })
                     ->pluck('target_user_id')
                     ->toArray();
-    
+
                 $excludedIds[] = $currentUserId;
-    
+
                 $user = User::with(['profile', 'actionByCurrentUser'])
                     ->where('status', 1)
                     ->whereNotIn('id', $excludedIds)
@@ -353,13 +393,13 @@ class DashbaordController extends Controller
                         if (!empty($currentProfile->iam_seeking)) {
                             $rawGenders = array_map('trim', explode(',', $currentProfile->iam_seeking));
                             $lowerRaw = array_map('strtolower', $rawGenders);
-            
+
                             // Skip gender filter if 'couple' or 'no preference' is selected
                             if (!in_array('couple', $lowerRaw) && !in_array('no preference', $lowerRaw)) {
                                 $mappedGenders = array_filter(array_map(function ($g) use ($genderMap) {
                                     return $genderMap[$g] ?? null;
                                 }, $rawGenders));
-            
+
                                 if (!empty($mappedGenders)) {
                                     $q->whereIn('gender', $mappedGenders);
                                 }
@@ -369,16 +409,16 @@ class DashbaordController extends Controller
                     })
                     ->latest()
                     ->first();
-    
+
                 // ⚠️ Null check for $user
                 if (!$user || !$user->profile) {
                     return $this->error('No matching users found', [], 404);
                 }
-    
+
                 $profile = $formatGalleryPhotos($user->profile);
                 $age = $profile->dob ? Carbon::parse($profile->dob)->age : null;
                 $matchPercentage = $calculateMatch($profile);
-    
+
                 $actionStatus = [
                     'liked' => $user->actionByCurrentUser?->liked ?? false,
                     'superliked' => $user->actionByCurrentUser?->superliked ?? false,
@@ -397,15 +437,15 @@ class DashbaordController extends Controller
                     'gender' => $profile->gender,
                     'email' => $user->email,
                     'distance' => '1 km away',
-                    'profile_photo_url' => $user->profile_photo_path 
-                        ? asset('storage/' . $user->profile_photo_path) 
+                    'profile_photo_url' => $user->profile_photo_path
+                        ? asset('storage/' . $user->profile_photo_path)
                         : null,
                     'match_percentage' => $matchPercentage,
                     'user_verify' => $user->user_verify,
                     'profile' => $profile,
                     'action' => $actionStatus,
                 ];
-    
+
                 return $this->success('User fetched successfully', ['user' => $userFormatted]);
             }
         } catch (ModelNotFoundException $e) {
@@ -417,18 +457,18 @@ class DashbaordController extends Controller
 
     public function userDetails(Request $request, $id)
     {
-        $user = User::with('profile','kyc')->find($id);
-    
+        $user = User::with('profile', 'kyc')->find($id);
+
         if (!$user) {
             return $this->error('User not found', [], 404);
         }
-    
+
         $profile = $user->profile;
-    
+
         if ($profile) {
             // Helper to generate full URL or null if empty
             $fullUrl = fn($path) => $path ? asset('storage/' . $path) : null;
-    
+
             // Add full URLs for profile and gallery photos
             $profile->profile_photo_url = $fullUrl($profile->profile_photo);
             $profile->gallery_photo1_url = $fullUrl($profile->gallery_photo1);
@@ -438,7 +478,7 @@ class DashbaordController extends Controller
             $profile->gallery_photo5_url = $fullUrl($profile->gallery_photo5);
             $profile->gallery_photo6_url = $fullUrl($profile->gallery_photo6);
         }
-    
+
         return $this->success('User retrieved successfully', [
             'user' => [
                 'id' => $user->id,
@@ -446,7 +486,7 @@ class DashbaordController extends Controller
                 'email' => $user->email,
                 'distance' => '1 km away',
                 'profile' => $profile,
-                'kyc'=>$user->kyc,
+                'kyc' => $user->kyc,
                 'profile_photo_url' => $profile ? $profile->profile_photo_url : null,
             ]
         ]);
@@ -457,17 +497,17 @@ class DashbaordController extends Controller
     {
         $currentUserId = auth()->id();
         $user = User::with('profile')->find($currentUserId);
-    
+
         if (!$user) {
             return $this->error('User not found', [], 404);
         }
-    
+
         $profile = $user->profile;
-    
+
         if ($profile) {
             // Helper to generate full URL or null if empty
             $fullUrl = fn($path) => $path ? asset('storage/' . $path) : null;
-    
+
             // Add full URLs for profile and gallery photos
             $profile->profile_photo_url = $fullUrl($profile->profile_photo);
             $profile->gallery_photo1_url = $fullUrl($profile->gallery_photo1);
@@ -477,7 +517,7 @@ class DashbaordController extends Controller
             $profile->gallery_photo5_url = $fullUrl($profile->gallery_photo5);
             $profile->gallery_photo6_url = $fullUrl($profile->gallery_photo6);
         }
-    
+
         return $this->success('User retrieved successfully', [
             'user' => [
                 'id' => $user->id,
@@ -489,22 +529,22 @@ class DashbaordController extends Controller
             ]
         ]);
     }
-    
+
     public function editUpdate(Request $request)
     {
         $currentUserId = auth()->id();
         $user = User::with('profile')->find($currentUserId);
-    
+
         if (!$user) {
             return $this->error('User not found', [], 404);
         }
-    
+
         $profile = $user->profile;
-    
+
         if ($profile) {
             // Helper to generate full URL or null if empty
             $fullUrl = fn($path) => $path ? asset('storage/' . $path) : null;
-    
+
             // Add full URLs for profile and gallery photos
             $profile->profile_photo_url = $fullUrl($profile->profile_photo);
             $profile->gallery_photo1_url = $fullUrl($profile->gallery_photo1);
@@ -514,7 +554,7 @@ class DashbaordController extends Controller
             $profile->gallery_photo5_url = $fullUrl($profile->gallery_photo5);
             $profile->gallery_photo6_url = $fullUrl($profile->gallery_photo6);
         }
-    
+
         return $this->success('User retrieved successfully', [
             'user' => [
                 'id' => $user->id,
@@ -533,7 +573,7 @@ class DashbaordController extends Controller
                 'target_user_id' => 'required|exists:users,id',
                 'comment' => 'required|string',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -541,21 +581,20 @@ class DashbaordController extends Controller
                     'errors' => $validator->errors(),
                 ], 422);
             }
-    
+
             $validated = $validator->validated();
-    
+
             // Create comment for authenticated user
             $comment = auth()->user()->comments()->create([
                 'target_user_id' => $validated['target_user_id'],
                 'comment' => $validated['comment']
             ]);
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Comment added successfully',
                 'comment' => $comment
             ]);
-    
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
@@ -666,7 +705,7 @@ class DashbaordController extends Controller
                         'type' => $action,
                     ]);
                 } catch (Exception $e) {
-                    \Log::error("Firebase DB write failed: " . $e->getMessage());
+                    Log::error("Firebase DB write failed: " . $e->getMessage());
                 }
             }
 
@@ -675,7 +714,6 @@ class DashbaordController extends Controller
                 'message' => ucfirst($action) . ' action recorded successfully.',
                 'data' => $userAction
             ]);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
@@ -692,7 +730,7 @@ class DashbaordController extends Controller
 
 
 
-    
+
     public function handleAction_old(Request $request)
     {
         try {
@@ -701,7 +739,7 @@ class DashbaordController extends Controller
                 'target_user_id' => 'required|exists:users,id',
                 'action' => 'required|in:like,dislike,superlike,block,unblock,superdislike,save,dateinvite,dateAdminers',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -709,28 +747,28 @@ class DashbaordController extends Controller
                     'errors' => $validator->errors(),
                 ], 422);
             }
-    
+
             $validated = $validator->validated();
-    
+
             $userId = auth()->id();
             $targetId = $validated['target_user_id'];
             $action = $validated['action'];
-    
+
             $data = [
                 'user_id' => $userId,
                 'target_user_id' => $targetId,
             ];
-    
+
             // Reset all fields to null before updating based on action
             $updates = [
                 'liked' => null,
                 'superliked' => null,
                 'save' => null,
                 'blocked' => null,
-                'dateAdminers'=> null,
+                'dateAdminers' => null,
                 'dateinvite' => null,
             ];
-    
+
             // Set the proper field based on the action
             switch ($action) {
                 case 'like':
@@ -767,15 +805,15 @@ class DashbaordController extends Controller
                     $updates['dateinvite'] = true;
                     break;
             }
-    
+
             // Update or create the user action record
             $userAction = UserAction::updateOrCreate($data, $updates);
-    
+
             // ✅ Fetch the target user here
             $targetUser = User::findOrFail($targetId);
             //$targetUser = User::findOrFail($userId);
 
-            if($targetUser->fcm_token){
+            if ($targetUser->fcm_token) {
                 $this->firebaseservice->sendPushNotification(
                     $targetUser->fcm_token,
                     'You have a new ' . ucfirst($action),
@@ -785,36 +823,35 @@ class DashbaordController extends Controller
                         'from_user_id' => auth()->id(),
                     ]
                 );
-             // 7. Save notification in Firebase Realtime Database
-             try {
-                $firebase = (new Factory)
-                    ->withServiceAccount(config('firebase.credentials'))
-                    ->withDatabaseUri(config('firebase.projects.app.database.url'));
+                // 7. Save notification in Firebase Realtime Database
+                try {
+                    $firebase = (new Factory)
+                        ->withServiceAccount(config('firebase.credentials'))
+                        ->withDatabaseUri(config('firebase.projects.app.database.url'));
 
-                $database = $firebase->createDatabase();
+                    $database = $firebase->createDatabase();
 
-                $receiverId = (string)$targetUser->id;
-                $senderId = (string)auth()->id();
+                    $receiverId = (string)$targetUser->id;
+                    $senderId = (string)auth()->id();
 
-                $database->getReference('notifications/' . $receiverId)->push([
-                    'isRead' => false,
-                    'receiverId' => $receiverId,
-                    'senderId' => $senderId,
-                    'timestamp' => Carbon::now()->timestamp * 1000,
-                    'title' => auth()->user()->name . ' ' . $this->getNotificationText($action),
-                    'type' => $action,
-                ]);
-            } catch (Exception $e) {
-                \Log::error("Failed to write notification to Firebase: " . $e->getMessage());
+                    $database->getReference('notifications/' . $receiverId)->push([
+                        'isRead' => false,
+                        'receiverId' => $receiverId,
+                        'senderId' => $senderId,
+                        'timestamp' => Carbon::now()->timestamp * 1000,
+                        'title' => auth()->user()->name . ' ' . $this->getNotificationText($action),
+                        'type' => $action,
+                    ]);
+                } catch (Exception $e) {
+                    Log::error("Failed to write notification to Firebase: " . $e->getMessage());
+                }
             }
-        }
-        
+
             return response()->json([
                 'success' => true,
                 'message' => ucfirst($action) . ' action recorded successfully.',
                 'data' => $userAction
             ]);
-    
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
@@ -835,7 +872,7 @@ class DashbaordController extends Controller
         $validator = Validator::make($request->all(), [
             'target_user_id' => 'required|exists:users,id',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -843,10 +880,10 @@ class DashbaordController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-    
+
         $userId = auth()->id();
         $targetId = $request->target_user_id;
-    
+
         $userAction = UserAction::where('user_id', $targetId)
             ->where('target_user_id', (int)$userId)
             ->first();
@@ -857,7 +894,7 @@ class DashbaordController extends Controller
                 'message' => 'User action not found.',
             ], 404);
         }
-    
+
         // Only convert if dateinvite is true
         if ($userAction->dateinvite) {
             $userAction->update([
@@ -870,7 +907,7 @@ class DashbaordController extends Controller
                 'message' => 'No active dateinvite found for this user pair.',
             ], 400);
         }
-    
+
         return response()->json([
             'success' => true,
             'message' => 'dateinvite converted to dateAdminers successfully.',
@@ -880,9 +917,9 @@ class DashbaordController extends Controller
 
     public function getActions(Request $request)
     {
-        $allowedTypes = ['liked', 'superliked', 'save', 'blocked', 'dateAdminers', 'your-matches','dateinvite'];
+        $allowedTypes = ['liked', 'superliked', 'save', 'blocked', 'dateAdminers', 'your-matches', 'dateinvite'];
         $type = $request->query('type');
-    
+
         if (!in_array($type, $allowedTypes)) {
             return response()->json([
                 'success' => false,
@@ -890,16 +927,16 @@ class DashbaordController extends Controller
                 'allowed_types' => $allowedTypes,
             ], 422);
         }
-    
+
         $currentUserId = auth()->id();
         $currentUser = User::with('profile')->findOrFail($currentUserId);
         $currentProfile = $currentUser->profile;
-    
+
         // Match percentage calculator
         $calculateMatch = function ($profile) use ($currentProfile) {
             $matchScore = 0;
             $totalCriteria = 10;
-    
+
             if ($currentProfile->partner_body_type === $profile->body_type) $matchScore++;
             if ($currentProfile->partner_eye_color === $profile->eye_color) $matchScore++;
             if ($currentProfile->partner_hair_color === $profile->hair_color) $matchScore++;
@@ -909,15 +946,15 @@ class DashbaordController extends Controller
             if ($currentProfile->partner_religion === $profile->religion) $matchScore++;
             if ($currentProfile->partner_vaccinated === $profile->vaccinated) $matchScore++;
             if ($currentProfile->partner_pets === $profile->pets) $matchScore++;
-    
+
             $userSports = explode(',', strtolower($profile->sports));
             $preferredSports = explode(',', strtolower($currentProfile->partner_sports));
             $intersectSports = array_intersect($userSports, $preferredSports);
             if (count($intersectSports)) $matchScore++;
-    
+
             return round(($matchScore / $totalCriteria) * 100);
         };
-    
+
         // Handle "your-matches" type separately
         if ($type === 'your-matches') {
             // 1. Get all users current user liked or superliked
@@ -926,7 +963,7 @@ class DashbaordController extends Controller
                     $q->where('liked', true)->orWhere('superliked', true);
                 })
                 ->pluck('target_user_id');
-    
+
             // 2. Find mutuals
             $mutuals = UserAction::whereIn('user_id', $myLikes)
                 ->where('target_user_id', $currentUserId)
@@ -935,16 +972,16 @@ class DashbaordController extends Controller
                 })
                 ->with(['user.profile']) // `user` is the one who matched back
                 ->get();
-    
+
             $usersFormatted = $mutuals->map(function ($action) use ($calculateMatch) {
                 $user = $action->user;
                 $profile = $user->profile;
-    
+
                 if (!$profile) return null;
-    
+
                 $age = $profile->dob ? \Carbon\Carbon::parse($profile->dob)->age : null;
                 $matchPercentage = $calculateMatch($profile);
-    
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -953,50 +990,50 @@ class DashbaordController extends Controller
                     'email' => $user->email,
                     'gender' => $profile->gender,
                     'distance' => '1 km away',
-                    'profile_photo_url' => $user->profile_photo_path 
-                        ? asset('storage/' . $user->profile_photo_path) 
+                    'profile_photo_url' => $user->profile_photo_path
+                        ? asset('storage/' . $user->profile_photo_path)
                         : null,
                     'match_percentage' => $matchPercentage,
                     'user_verify' => $user->user_verify,
                 ];
             })->filter();
-    
+
             return $this->success('Your matches fetched successfully', [
                 'users' => $usersFormatted->values()
             ]);
         }
-    
+
         // Default action types (liked, superliked, etc.)
         $actions = UserAction::where('user_id', $currentUserId)
             ->where($type, true)
             ->with(['targetUser.profile'])
             ->get();
-    
+
         $usersFormatted = $actions->map(function ($action) use ($calculateMatch) {
-            
+
             $user = $action->targetUser;
-            $profile = $user->profile??'';
-    
+            $profile = $user->profile ?? '';
+
             if (!$profile) return null;
-    
+
             $age = $profile->dob ? \Carbon\Carbon::parse($profile->dob)->age : null;
             $matchPercentage = $calculateMatch($profile);
-    
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
                 'age' => $age,
-                'height' => $profile->height??'',
+                'height' => $profile->height ?? '',
                 'email' => $user->email,
                 'distance' => '1 km away',
-                'profile_photo_url' => $user->profile_photo_path 
-                    ? asset('storage/' . $user->profile_photo_path) 
+                'profile_photo_url' => $user->profile_photo_path
+                    ? asset('storage/' . $user->profile_photo_path)
                     : null,
                 'match_percentage' => $matchPercentage,
                 'user_verify' => $user->user_verify,
             ];
         })->filter();
-    
+
         return $this->success('Users fetched successfully', [
             'users' => $usersFormatted->values()
         ]);
@@ -1005,7 +1042,7 @@ class DashbaordController extends Controller
     {
         $allowedTypes = ['liked', 'superliked', 'save', 'blocked', 'dateAdminers', 'your-matches'];
         $type = $request->query('type');
-    
+
         if (!in_array($type, $allowedTypes)) {
             return response()->json([
                 'success' => false,
@@ -1013,16 +1050,16 @@ class DashbaordController extends Controller
                 'allowed_types' => $allowedTypes,
             ], 422);
         }
-    
+
         $currentUserId = auth()->id();
         $currentUser = User::with('profile')->findOrFail($currentUserId);
         $currentProfile = $currentUser->profile;
-    
+
         // Match percentage calculator
         $calculateMatch = function ($profile) use ($currentProfile) {
             $matchScore = 0;
             $totalCriteria = 10;
-    
+
             if ($currentProfile->partner_body_type === $profile->body_type) $matchScore++;
             if ($currentProfile->partner_eye_color === $profile->eye_color) $matchScore++;
             if ($currentProfile->partner_hair_color === $profile->hair_color) $matchScore++;
@@ -1032,15 +1069,15 @@ class DashbaordController extends Controller
             if ($currentProfile->partner_religion === $profile->religion) $matchScore++;
             if ($currentProfile->partner_vaccinated === $profile->vaccinated) $matchScore++;
             if ($currentProfile->partner_pets === $profile->pets) $matchScore++;
-    
+
             $userSports = explode(',', strtolower($profile->sports));
             $preferredSports = explode(',', strtolower($currentProfile->partner_sports));
             $intersectSports = array_intersect($userSports, $preferredSports);
             if (count($intersectSports)) $matchScore++;
-    
+
             return round(($matchScore / $totalCriteria) * 100);
         };
-    
+
         // Handle "your-matches" type separately
         if ($type === 'your-matches') {
             // 1. Get all users current user liked or superliked
@@ -1049,7 +1086,7 @@ class DashbaordController extends Controller
                     $q->where('liked', true)->orWhere('superliked', true);
                 })
                 ->pluck('target_user_id');
-    
+
             // 2. Find mutuals
             $mutuals = UserAction::whereIn('user_id', $myLikes)
                 ->where('target_user_id', $currentUserId)
@@ -1058,16 +1095,16 @@ class DashbaordController extends Controller
                 })
                 ->with(['user.profile']) // `user` is the one who matched back
                 ->get();
-    
+
             $usersFormatted = $mutuals->map(function ($action) use ($calculateMatch) {
                 $user = $action->user;
                 $profile = $user->profile;
-    
+
                 if (!$profile) return null;
-    
+
                 $age = $profile->dob ? \Carbon\Carbon::parse($profile->dob)->age : null;
                 $matchPercentage = $calculateMatch($profile);
-    
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -1076,45 +1113,45 @@ class DashbaordController extends Controller
                     'gender' => $profile->gender,
                     'email' => $user->email,
                     'distance' => '1 km away',
-                    'profile_photo_url' => $user->profile_photo_path 
-                        ? asset('storage/' . $user->profile_photo_path) 
+                    'profile_photo_url' => $user->profile_photo_path
+                        ? asset('storage/' . $user->profile_photo_path)
                         : null,
                     'match_percentage' => $matchPercentage,
                     'user_verify' => $user->user_verify,
                 ];
             })->filter();
-    
+
             return $this->success('Your matches fetched successfully', [
                 'users' => $usersFormatted->values()
             ]);
         }
-    
+
         // Default action types (liked, superliked, etc.)
         $actions = UserAction::where('target_user_id', $currentUserId)
             ->where($type, 1)
             ->with(['user.profile'])
             ->get();
-           
+
         $usersFormatted = $actions->map(function ($action) use ($calculateMatch) {
-            
+
             $user = $action->user;
-            $profile = $user->profile??'';
-    
+            $profile = $user->profile ?? '';
+
             if (!$profile) return null;
-    
+
             $age = $profile->dob ? \Carbon\Carbon::parse($profile->dob)->age : null;
             $matchPercentage = $calculateMatch($profile);
-    
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
                 'age' => $age,
-                'height' => $profile->height??'',
+                'height' => $profile->height ?? '',
                 'gender' => $profile->gender,
                 'email' => $user->email,
                 'distance' => '1 km away',
-                'profile_photo_url' => $user->profile_photo_path 
-                    ? asset('storage/' . $user->profile_photo_path) 
+                'profile_photo_url' => $user->profile_photo_path
+                    ? asset('storage/' . $user->profile_photo_path)
                     : null,
                 'match_percentage' => $matchPercentage,
                 'user_verify' => $user->user_verify,
@@ -1130,7 +1167,7 @@ class DashbaordController extends Controller
     {
         $allowedTypes = ['liked', 'superliked', 'save', 'blocked', 'dateAdminers'];
         $type = $request->query('type');
-    
+
         if (!in_array($type, $allowedTypes)) {
             return response()->json([
                 'success' => false,
@@ -1138,16 +1175,16 @@ class DashbaordController extends Controller
                 'allowed_types' => $allowedTypes,
             ], 422);
         }
-    
+
         $currentUserId = auth()->id();
         $currentUser = User::with('profile')->findOrFail($currentUserId);
         $currentProfile = $currentUser->profile;
-    
+
         // Match percentage calculator
         $calculateMatch = function ($profile) use ($currentProfile) {
             $matchScore = 0;
             $totalCriteria = 10;
-    
+
             if ($currentProfile->partner_body_type === $profile->body_type) $matchScore++;
             if ($currentProfile->partner_eye_color === $profile->eye_color) $matchScore++;
             if ($currentProfile->partner_hair_color === $profile->hair_color) $matchScore++;
@@ -1157,43 +1194,43 @@ class DashbaordController extends Controller
             if ($currentProfile->partner_religion === $profile->religion) $matchScore++;
             if ($currentProfile->partner_vaccinated === $profile->vaccinated) $matchScore++;
             if ($currentProfile->partner_pets === $profile->pets) $matchScore++;
-    
+
             $userSports = explode(',', strtolower($profile->sports));
             $preferredSports = explode(',', strtolower($currentProfile->partner_sports));
             $intersectSports = array_intersect($userSports, $preferredSports);
             if (count($intersectSports)) $matchScore++;
-    
+
             return round(($matchScore / $totalCriteria) * 100);
         };
-    
+
         $actions = UserAction::where('user_id', $currentUserId)
             ->where($type, true)
             ->with(['targetUser.profile'])
             ->get();
-    
+
         $usersFormatted = $actions->map(function ($action) use ($calculateMatch) {
             $user = $action->targetUser;
             $profile = $user->profile;
-    
+
             if (!$profile) return null;
-    
+
             $age = $profile->dob ? \Carbon\Carbon::parse($profile->dob)->age : null;
             $matchPercentage = $calculateMatch($profile);
-    
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
                 'age' => $age,
                 'email' => $user->email,
                 'distance' => '1 km away',
-                'profile_photo_url' => $user->profile_photo_path 
-                    ? asset('storage/' . $user->profile_photo_path) 
+                'profile_photo_url' => $user->profile_photo_path
+                    ? asset('storage/' . $user->profile_photo_path)
                     : null,
                 'match_percentage' => $matchPercentage,
                 'user_verify' => $user->user_verify,
             ];
         })->filter();
-    
+
         return $this->success('Users fetched successfully', [
             'users' => $usersFormatted->values()
         ]);
@@ -1203,9 +1240,9 @@ class DashbaordController extends Controller
     public function getActions_old(Request $request)
     {
         $allowedTypes = ['liked', 'superliked', 'save', 'blocked', 'dateAdminers'];
-    
+
         $type = $request->query('type');
-    
+
         if (!in_array($type, $allowedTypes)) {
             return response()->json([
                 'success' => false,
@@ -1213,9 +1250,9 @@ class DashbaordController extends Controller
                 'allowed_types' => $allowedTypes,
             ], 422);
         }
-    
+
         $userId = auth()->id();
-    
+
         // Get UserAction records with this action = true
         $actions = UserAction::where('user_id', $userId)
             ->where($type, true)
@@ -1230,7 +1267,7 @@ class DashbaordController extends Controller
                 'nick_name' => $action->targetUser->nick_name,
                 'profile_photo_path' => asset('storage/' . $action->targetUser->profile_photo_path),
                 'distance' => '1 km away',
-                
+
             ];
         });
         return $this->success('User actions', [
@@ -1238,23 +1275,22 @@ class DashbaordController extends Controller
             'type' => $type,
             'data' => $result,
         ]);
-        
     }
     public function freezeAccount(Request $request)
     {
         try {
             $user = auth()->user();
-    
+
             if (!$user) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized user.',
                 ], 401);
             }
-    
+
             $user->freeze_account = true;
             $user->save();
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Your account has been frozen successfully.',
@@ -1271,24 +1307,24 @@ class DashbaordController extends Controller
     {
         try {
             $user = auth()->user();
-    
+
             if (!$user) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized user.',
                 ], 401);
             }
-    
+
             if (!$user->freeze_account) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Account is already active.',
                 ], 400);
             }
-    
+
             $user->freeze_account = false;
             $user->save();
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Your account has been unfrozen successfully.',
@@ -1304,14 +1340,14 @@ class DashbaordController extends Controller
     public function checkFreezeStatus()
     {
         $user = auth()->user();
-    
+
         if (!$user) {
             return response()->json([
                 'status' => false,
                 'message' => 'Unauthorized user.',
             ], 401);
         }
-    
+
         return response()->json([
             'status' => true,
             'freeze_account' => $user->freeze_account,
@@ -1350,6 +1386,4 @@ class DashbaordController extends Controller
                 return 'interacted with you';
         }
     }
-
-    
 }
