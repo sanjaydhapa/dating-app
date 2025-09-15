@@ -28,7 +28,7 @@ class StoryController extends Controller
 
         $file = $request->file('media');
         $path = $file->store('stories', 'public');
- 
+
         $mediaType = str_contains($file->getMimeType(), 'video') ? 'video' : 'image';
 
         $story = Story::create([
@@ -53,7 +53,7 @@ class StoryController extends Controller
             ->groupBy('user_id')
             ->map(function ($userStories) {
                 $user = $userStories->first()->user;
-    
+
                 return [
                     'user_id' => $user->id,
                     'name' => $user->name,
@@ -69,7 +69,7 @@ class StoryController extends Controller
                     })->values(), // reset keys
                 ];
             })->values(); // reset keys for outer group
-    
+
         return $this->success('Story List', [
             'stories' => $stories,
         ]);
@@ -94,7 +94,7 @@ class StoryController extends Controller
                     ],
                 ];
             });
-    
+
         //return response()->json($stories);
         return $this->success('Story List', [
             'stories' => $stories,
@@ -126,7 +126,9 @@ class StoryController extends Controller
 
     public function myStories()
     {
-        $stories = Story::where('user_id', auth()->id())->get()
+        $stories = Story::where('user_id', auth()->id())
+                    ->where('expires_at', '>', now())
+                    ->get()
                     ->map(function ($story) {
                         $story->media_url = asset($story->media_url);
                         return $story;
