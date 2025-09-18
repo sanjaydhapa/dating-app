@@ -483,11 +483,12 @@ class DashbaordController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'nick_name' => $user->nick_name,
                 'email' => $user->email,
                 'distance' => '1 km away',
                 'profile' => $profile,
                 'kyc' => $user->kyc,
-                'profile_photo_url' => $profile ? $profile->profile_photo_url : null,
+                'profile_photo_url' => asset('storage/' . $user->profile_photo_path)  ?? null,
             ]
         ]);
     }
@@ -525,7 +526,7 @@ class DashbaordController extends Controller
                 'email' => $user->email,
                 'height' => $profile->height,
                 'profile' => $profile,
-                'profile_photo_url' => $profile ? $profile->profile_photo_url : null,
+                'profile_photo_url' => $user->profile_photo_url ?? null,
             ]
         ]);
     }
@@ -659,18 +660,18 @@ class DashbaordController extends Controller
 
             $existingAction = UserAction::where($data)->first();
 
+            // Allow changing actions, but prevent duplicate actions of the same type
             if ($existingAction) {
-                foreach ($allActionFields as $actField) {
-                    if (!is_null($existingAction->$actField)) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "You have already performed an action ('{$actField}') on this user.",
-                        ], 200);
-                    }
+                // Check if user is trying to perform the same action again
+                if ($existingAction->$field === $newValue) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "You have already performed this action on this user.",
+                    ], 200);
                 }
             }
 
-            // No action yet, reset all and apply new one
+            // Reset all action fields and apply the new one
             $updates = array_fill_keys($allActionFields, null);
             $updates[$field] = $newValue;
 
