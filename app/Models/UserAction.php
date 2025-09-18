@@ -18,6 +18,7 @@ class UserAction extends Model
         'save',
         'dateAdminers',
         'dateinvite',
+        'is_view',
     ];
     public function targetUser()
     {
@@ -27,5 +28,5 @@ class UserAction extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
- 
+
 }

@@ -31,6 +31,8 @@ class User extends Authenticatable
         'nick_name',
         'profile_photo_path',
         'fcm_token',
+        'freeze_account',
+        'is_online',
     ];
 
     /**
@@ -76,7 +78,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserLike::class);
     }
-    
+
     public function blocks()
     {
         return $this->hasMany(UserBlock::class);
@@ -85,17 +87,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserComment::class);
     }
-    
+
     public function feeds()
     {
         return $this->hasMany(Feed::class);
     }
-    
+
     public function feedComments()
     {
         return $this->hasMany(Comment::class);
     }
-    
+
     public function feedLikes()
     {
         return $this->hasMany(Like::class);
@@ -111,8 +113,12 @@ class User extends Authenticatable
         return $this->hasOne(UserAction::class, 'target_user_id', 'id')
             ->where('user_id', auth()->id());
     }
-    
-    
-    
-    
+
+
+    public function viewCount() {
+        return $this->hasMany(UserAction::class, 'target_user_id')->where('is_view', 1);
+    }
+
+
+
 }

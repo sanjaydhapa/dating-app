@@ -30,17 +30,8 @@ class DashbaordController extends Controller
         //dd($request->all());
         $currentUserId = auth()->id();
 
-        $currentUser = User::with('profile')->findOrFail($currentUserId);
+        $currentUser = User::with('profile','viewCount')->findOrFail($currentUserId);
         $currentProfile = $currentUser->profile;
-        //$blockedIds = auth()->user()->blocks()->pluck('blocked_user_id');
-        //$age = $currentProfile->dob ? Carbon::parse($currentProfile->dob)->age : null;
-
-        // Get current user's location
-        $currentLat = $currentProfile->latitude ?? null;
-        $currentLng = $currentProfile->longitude ?? null;
-
-        // Default radius in kilometers
-        $radiusKm = 50;
 
         $blockedIds = UserAction::where('user_id', auth()->id())
             ->where('blocked', true)
@@ -63,34 +54,46 @@ class DashbaordController extends Controller
         $ageMax = $request->input('partner_age_max');
 
         $location = $request->input('location');
+        $filter_type = $request->input('filter_type');
 
         $orderBy = $request->input('order_by', 'new');
         $search = $request->input('search');
+
+        // For nearby filter, get current user's latitude/longitude from UserProfile (must be numeric, no degree symbols)
+        $currentLat = $currentProfile->latitude ?? null;
+        $currentLng = $currentProfile->longitude ?? null;
+
         $usersQuery = User::with(['profile', 'kyc', 'actionByCurrentUser'])  //
             ->where('status', 1)
             ->where('freeze_account', false)
             ->where('id', '!=', $currentUserId)
-            ->whereNotIn('id', $blockedIds)
-            ->whereHas('profile', function ($q) use ($heightMin, $heightMax, $ageMin, $ageMax, $currentProfile, $currentLat, $currentLng, $radiusKm) {
+            ->whereNotIn('id', $blockedIds);
+
+        // Add unseen filter: exclude users who are present in any UserAction where user_id = current user
+        if ($filter_type == 'unseen') {
+            $seenUserIds = UserAction::where('user_id', $currentUserId)
+                ->pluck('target_user_id')
+                ->toArray();
+            if (!empty($seenUserIds)) {
+                $usersQuery = $usersQuery->whereNotIn('id', $seenUserIds);
+            }
+        }
+
+        $usersQuery = $usersQuery->whereHas('profile', function ($q) use ($heightMin, $heightMax, $ageMin, $ageMax, $currentProfile, $filter_type, $currentLat, $currentLng) {
                 if ($heightMin !== null && $heightMax !== null) {
                     $q->whereBetween('height', [$heightMin, $heightMax]);
                 }
 
-                if ($ageMin !== null && $ageMax !== null) {
-                    $q->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN ? AND ?', [(int)$ageMin, (int)$ageMax]);
+                // Nearby filter: only users within 50km radius
+                if ($filter_type == 'nearby' && $currentLat !== null && $currentLng !== null) {
+
+                    // Use only numeric latitude/longitude columns from DB (UserProfile: latitude, longitude)
+                    $haversine = "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))";
+                    $q->whereRaw("$haversine < 50", [$currentLat, $currentLng, $currentLat]);
                 }
 
-                // Add distance filter if current user has location
-                if ($currentLat !== null && $currentLng !== null) {
-                    $q->whereRaw("
-                        (6371 * acos(
-                            cos(radians(?)) *
-                            cos(radians(latitude)) *
-                            cos(radians(longitude) - radians(?)) +
-                            sin(radians(?)) *
-                            sin(radians(latitude))
-                        )) <= ?
-                    ", [$currentLat, $currentLng, $currentLat, $radiusKm]);
+                if ($ageMin !== null && $ageMax !== null) {
+                    $q->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) BETWEEN ? AND ?', [(int)$ageMin, (int)$ageMax]);
                 }
 
                 //dd($currentProfile->iam_seeking);
@@ -183,10 +186,6 @@ class DashbaordController extends Controller
                 }
             });
 
-        if (!empty($search)) {
-            $usersQuery->where('name', 'like', '%' . $search . '%');
-        }
-
         // Order by newest or oldest
         if ($orderBy === 'newest') {
             $usersQuery->orderBy('id', 'desc');
@@ -196,19 +195,76 @@ class DashbaordController extends Controller
             $usersQuery->orderBy('id', 'asc'); // default
         }
 
+
+        // Add Filter
+        if ($filter_type == 'online') {
+            $usersQuery->where('is_online', true);
+        }
+        // 'nearby' and ordering handled elsewhere
+        // 'unseen' handled above
+        if ($filter_type == 'newest') {
+            $usersQuery->orderBy('id', 'desc');
+        } elseif ($filter_type == 'oldest') {
+            $usersQuery->orderBy('id', 'asc');
+        } else {
+            $usersQuery->orderBy('id', 'asc'); // default
+        }
+
+        if ($filter_type == 'verified') {
+            $usersQuery->where('user_verify', 1);
+        }
+
+        if ($filter_type == 'popular') {
+
+            $usersQuery = $usersQuery->withCount(['viewCount as is_view_count' => function ($query) {
+                $query->where('is_view', 1);
+            }])
+            ->having('is_view_count', '>', 0)
+            ->orderByDesc('is_view_count');
+        }
+
+
+
+        if (!empty($search)) {
+            $usersQuery->where('name', 'like', '%' . $search . '%');
+        }
+
+
+
+
+
+
         $users = $usersQuery->get();
 
+        // If filter_type is nearby, filter and sort by distance in PHP
+        if ($filter_type == 'nearby' && $currentLat !== null && $currentLng !== null) {
+            $users = $users->filter(function ($user) use ($currentLat, $currentLng) {
+                $profile = $user->profile;
+                if (!$profile || !is_numeric($profile->latitude) || !is_numeric($profile->longitude)) return false;
+                $theta = $currentLng - $profile->longitude;
+                $dist = sin(deg2rad($currentLat)) * sin(deg2rad($profile->latitude)) + cos(deg2rad($currentLat)) * cos(deg2rad($profile->latitude)) * cos(deg2rad($theta));
+                $dist = acos(min(1, max(-1, $dist)));
+                $dist = rad2deg($dist);
+                $km = $dist * 60 * 1.1515 * 1.609344;
+                return $km <= 50;
+            })->sortBy(function ($user) use ($currentLat, $currentLng) {
+                $profile = $user->profile;
+                if (!$profile || !is_numeric($profile->latitude) || !is_numeric($profile->longitude)) return PHP_INT_MAX;
+                $theta = $currentLng - $profile->longitude;
+                $dist = sin(deg2rad($currentLat)) * sin(deg2rad($profile->latitude)) + cos(deg2rad($currentLat)) * cos(deg2rad($profile->latitude)) * cos(deg2rad($theta));
+                $dist = acos(min(1, max(-1, $dist)));
+                $dist = rad2deg($dist);
+                $km = $dist * 60 * 1.1515 * 1.609344;
+                return $km;
+            })->values();
+        }
 
-
-        $usersFormatted = $users->map(function ($user) use ($currentProfile, $currentLat, $currentLng) {
+        $usersFormatted = $users->map(function ($user) use ($currentProfile, $filter_type, $currentLat, $currentLng) {
             $profile = $user->profile;
-
             if (!$profile) return null;
-
             $age = $profile->dob ? Carbon::parse($profile->dob)->age : null;
             $matchScore = 0;
             $totalCriteria = 10;
-
             // Matching logic
             if ($currentProfile->partner_body_type === $profile->body_type) $matchScore++;
             if ($currentProfile->partner_eye_color === $profile->eye_color) $matchScore++;
@@ -219,34 +275,13 @@ class DashbaordController extends Controller
             if ($currentProfile->partner_religion === $profile->religion) $matchScore++;
             if ($currentProfile->partner_vaccinated === $profile->vaccinated) $matchScore++;
             if ($currentProfile->partner_pets === $profile->pets) $matchScore++;
-
             // Sports & Entertainment match (partial)
             $userSports = explode(',', strtolower($profile->sports));
             $preferredSports = explode(',', strtolower($currentProfile->partner_sports));
             $intersectSports = array_intersect($userSports, $preferredSports);
             if (count($intersectSports)) $matchScore++;
-
             $matchPercentage = round(($matchScore / $totalCriteria) * 100);
-
-            // Calculate actual distance if both users have location
-            $distance = 'Location not available';
-            if ($currentLat && $currentLng && $profile->latitude && $profile->longitude) {
-                $earthRadius = 6371; // Earth's radius in kilometers
-
-                $dLat = deg2rad($profile->latitude - $currentLat);
-                $dLng = deg2rad($profile->longitude - $currentLng);
-
-                $a = sin($dLat/2) * sin($dLat/2) +
-                     cos(deg2rad($currentLat)) * cos(deg2rad($profile->latitude)) *
-                     sin($dLng/2) * sin($dLng/2);
-                $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-
-                $distanceKm = round($earthRadius * $c, 1);
-                $distance = $distanceKm . ' km away';
-            }
-
             $action = $user->actionByCurrentUser;
-
             $actionStatus = [
                 'liked' => $action?->liked ?? false,
                 'superliked' => $action?->superliked ?? false,
@@ -255,8 +290,16 @@ class DashbaordController extends Controller
                 'dateAdminers' => $action?->dateAdminers ?? false,
                 'dateinvite' => $action?->dateinvite ?? false,
             ];
-
-
+            // Calculate distance if nearby filter
+            $distance = '';
+            if ($filter_type == 'nearby' && $currentLat !== null && $currentLng !== null && is_numeric($profile->latitude) && is_numeric($profile->longitude)) {
+                $theta = $currentLng - $profile->longitude;
+                $dist = sin(deg2rad($currentLat)) * sin(deg2rad($profile->latitude)) + cos(deg2rad($currentLat)) * cos(deg2rad($profile->latitude)) * cos(deg2rad($theta));
+                $dist = acos($dist);
+                $dist = rad2deg($dist);
+                $km = $dist * 60 * 1.1515 * 1.609344;
+                $distance = round($km, 2) . ' km';
+            }
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -271,6 +314,7 @@ class DashbaordController extends Controller
                     : null,
                 'match_percentage' => $matchPercentage,
                 'user_verify' => $user->user_verify,
+                'view_count' => isset($user->viewCount) ? $user->viewCount->count() : 0,
                 'action' => $actionStatus,
             ];
         })->filter(); // Remove nulls
@@ -616,7 +660,7 @@ class DashbaordController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'target_user_id' => 'required|exists:users,id',
-                'action' => 'required|in:like,dislike,superlike,superdislike,save,unsave,block,unblock,dateinvite,dateAdminers,unDateAdminers',
+                'action' => 'required|in:like,dislike,superlike,superdislike,save,unsave,block,unblock,dateinvite,dateAdminers,unDateAdminers,is_view',
             ]);
 
             if ($validator->fails()) {
@@ -650,6 +694,7 @@ class DashbaordController extends Controller
                 'dateinvite' => ['field' => 'dateinvite', 'value' => 1],
                 'dateAdminers' => ['field' => 'dateAdminers', 'value' => 1],
                 'unDateAdminers' => ['field' => 'dateAdminers', 'value' => 0],
+                'is_view'=> ['field' => 'is_view', 'value' => 1],
             ];
 
             $field = $fieldMap[$action]['field'];
@@ -660,22 +705,30 @@ class DashbaordController extends Controller
 
             $existingAction = UserAction::where($data)->first();
 
-            // Allow changing actions, but prevent duplicate actions of the same type
-            if ($existingAction) {
-                // Check if user is trying to perform the same action again
-                if ($existingAction->$field === $newValue) {
+            // If action is 'is_view', only update is_view field to 1, do not reset other fields
+            if ($action === 'is_view') {
+                if ($existingAction && $existingAction->is_view == 1) {
                     return response()->json([
                         'success' => false,
                         'message' => "You have already performed this action on this user.",
                     ], 200);
                 }
+                $userAction = UserAction::updateOrCreate($data, ['is_view' => 1]);
+            } else {
+                // Allow changing actions, but prevent duplicate actions of the same type
+                if ($existingAction) {
+                    if ($existingAction->$field === $newValue) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "You have already performed this action on this user.",
+                        ], 200);
+                    }
+                }
+                // Reset all action fields and apply the new one
+                $updates = array_fill_keys($allActionFields, null);
+                $updates[$field] = $newValue;
+                $userAction = UserAction::updateOrCreate($data, $updates);
             }
-
-            // Reset all action fields and apply the new one
-            $updates = array_fill_keys($allActionFields, null);
-            $updates[$field] = $newValue;
-
-            $userAction = UserAction::updateOrCreate($data, $updates);
 
             // Send notification if FCM token exists
             $targetUser = User::findOrFail($targetId);
