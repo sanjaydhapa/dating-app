@@ -324,6 +324,7 @@ class AuthController extends Controller
             $user->update([
                 'name' => $payload['name'] ?? $user->name,
                 'nick_name' => $payload['given_name'] ?? $user->nick_name,
+                'is_online' => 1,
             ]);
         } else {
             // New user: Create with default status 2
@@ -333,6 +334,7 @@ class AuthController extends Controller
                 'nick_name' => $payload['given_name'] ?? null,
                 'password' => bcrypt(\Illuminate\Support\Str::random(16)),
                 'status' => 2,
+                'is_online'=> 1,
             ]);
         }
 
@@ -374,8 +376,10 @@ class AuthController extends Controller
         }
 
         if ($fcmToken) {
-            $user->update(['fcm_token' => $fcmToken]);
+            $data['fcm_token'] = $fcmToken;
         }
+        $data['is_online'] = 1;
+        $user->update($data);
 
         $token = $user->createToken('auth_token')->plainTextToken;
         $firebaseCustomToken = $this->syncWithFirebase($user);
@@ -389,6 +393,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'status' => $user->status,
+                'is_online'=>$user->is_online,
                 'profile_photo' => $user->profile_photo_path,
                 'created_at' => $user->created_at,
             ]
@@ -398,7 +403,13 @@ class AuthController extends Controller
     // Logout
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        $user = $request->user();
+
+        $user->update([
+            'is_online' => 2,
+        ]);
+
+         $user->tokens()->delete();
 
         return response()->json(['message' => 'Logged out successfully']);
     }
