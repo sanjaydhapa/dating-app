@@ -120,27 +120,41 @@ class UserService
         }
 
         $result = [];
-        foreach ($tags as $lower => $original) {
-            // Query users whose profile iam_looking_for contains this tag
-            $usersQuery = User::with(['profile', 'kyc', 'actionByCurrentUser', 'viewCount'])
-                ->where('status', 1)
-                ->where('freeze_account', false)
-                ->where('id', '!=', $currentUser->id)
-                ->whereNotIn('id', $blockedIds)
-                ->whereHas('profile', function ($q) use ($lower) {
-                    $q->whereRaw('LOWER(iam_looking_for) LIKE ?', ['%' . $lower . '%']);
-                });
+        $limitPerGroup = $request->filled('looking_for') ? null : 5;
 
-            // Optional search filter from request (applies to nick_name)
-            if ($request->filled('search')) {
-                $usersQuery->where('nick_name', 'like', '%' . $request->search . '%');
-            }
+            foreach ($tags as $lower => $original) {
+                    // Query users whose profile iam_looking_for contains this tag
+                    $usersQuery = User::with(['profile', 'kyc', 'actionByCurrentUser', 'viewCount'])
+                        ->where('status', 1)
+                        ->where('freeze_account', false)
+                        ->where('id', '!=', $currentUser->id)
+                        ->whereNotIn('id', $blockedIds)
+                        ->whereHas('profile', function ($q) use ($lower) {
+                            $q->whereRaw('LOWER(iam_looking_for) LIKE ?', ['%' . $lower . '%']);
+                        });
 
-            $users = $usersQuery->get();
+                    // Optional search filter from request (applies to nick_name)
+                    if ($request->filled('search')) {
+                        $usersQuery->where('nick_name', 'like', '%' . $request->search . '%');
+                    }
 
-            $formatted = $this->formatUsers($users, $currentProfile, null, $currentLat, $currentLng)->values();
-            $result[$original] = $formatted;
-        }
+                    // total count of matching users for this tag (before applying limit)
+                    $total = (clone $usersQuery)->count();
+
+                    if ($limitPerGroup) {
+                        $users = $usersQuery->limit($limitPerGroup)->get();
+                    } else {
+                        $users = $usersQuery->get();
+                    }
+
+                    $formatted = $this->formatUsers($users, $currentProfile, null, $currentLat, $currentLng)->values();
+
+                    // store as object with total and users
+                    $result[$original] = [
+                        'total' => (int) $total,
+                        'users' => $formatted,
+                    ];
+                }
 
         return $result;
     }
